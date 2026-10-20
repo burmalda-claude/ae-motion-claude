@@ -62,3 +62,42 @@ const SliceComp: React.FC<TransitionPresentationComponentProps<SliceProps>> = ({
 };
 /** Incoming shot slides in as alternating horizontal slices. */
 export const slices = (props: SliceProps = {}): TransitionPresentation<SliceProps> => ({ component: SliceComp, props });
+
+type StreakProps = { axis?: "x" | "y" };
+const StreakComp: React.FC<TransitionPresentationComponentProps<StreakProps>> = ({ children, presentationDirection, presentationProgress, passedProps }) => {
+  const vertical = (passedProps.axis ?? "y") === "y";
+  const p = EASE.inOut(presentationProgress);
+  const entering = presentationDirection === "entering";
+  const k = entering ? 1 - p : p; // 0 = settled, 1 = fully streaked
+  const st = 1 + k * 7;
+  const blur = k * 70;
+  return (
+    <AbsoluteFill style={{ opacity: entering ? Math.min(1, p * 2.5) : 1 - Math.max(0, p * 2 - 1), transform: vertical ? `scaleY(${st})` : `scaleX(${st})` }}>
+      <Smear x={vertical ? 0 : blur} y={vertical ? blur : 0} style={{ width: "100%", height: "100%" }}>
+        <AbsoluteFill>{children}</AbsoluteFill>
+      </Smear>
+    </AbsoluteFill>
+  );
+};
+/** Column/row streak: the picture stretches into motion-blurred bars and snaps back (kinetic trailer cut). */
+export const streak = (props: StreakProps = {}): TransitionPresentation<StreakProps> => ({ component: StreakComp, props });
+
+const ZoomBlurComp: React.FC<TransitionPresentationComponentProps<Record<string, never>>> = ({ children, presentationDirection, presentationProgress }) => {
+  const p = EASE.inOut(presentationProgress);
+  const entering = presentationDirection === "entering";
+  const s = entering ? mix(0.4, 1, p) : mix(1, 2.6, p);
+  const amt = Math.sin(presentationProgress * Math.PI);
+  const o = entering ? Math.min(1, p * 2) : 1 - Math.max(0, p * 2 - 1);
+  return (
+    <AbsoluteFill style={{ opacity: o }}>
+      {[3, 2, 1].map((i) => (
+        <AbsoluteFill key={i} style={{ transform: `scale(${s * (1 + i * 0.08 * amt)})`, opacity: 0.3 * amt, filter: `blur(${4 * i}px)` }}>
+          {children}
+        </AbsoluteFill>
+      ))}
+      <AbsoluteFill style={{ transform: `scale(${s})`, filter: `blur(${amt * 6}px)` }}>{children}</AbsoluteFill>
+    </AbsoluteFill>
+  );
+};
+/** Radial zoom blur: outgoing rushes into the lens with echo trails, incoming lands from behind. */
+export const zoomBlur = (): TransitionPresentation<Record<string, never>> => ({ component: ZoomBlurComp, props: {} });

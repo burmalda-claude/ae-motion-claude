@@ -6,25 +6,29 @@ A [Claude Code](https://claude.com/claude-code) plugin that teaches Claude to ma
 
 ## What's inside
 
-One skill, `motion-design`, which Claude loads on its own when you ask for a video, intro, titles, promo, reels and so on. You write one line — Claude acts as director and motion designer.
+One skill, `motion-design`, which Claude loads on its own when you ask for a video, intro, titles, promo, reels and so on. You write one line — Claude acts as director, motion designer, editor and sound designer.
 
 | Part | What it does |
 |---|---|
-| **Director mode** (`references/director.md`) | Turns a short prompt into a full brief without a questionnaire: format, length, theme by topic, language, script as 1–4 word beats (hook → setup → reveal → proof → climax → logo/CTA), then builds |
-| **Component kit** (`kit/`) | ~45 ready Remotion components Claude copies into your project: kinetic text, effects, camera, transitions, mock UI |
-| **Reference video** (`examples/KineticPromo.tsx`) | A full 15-shot kinetic promo in the red/black/white trailer style — the quality bar |
-| **Editing grammar** (`references/editing.md`) | Cut rhythm on a beat grid, 8 cut types, 14 shot types, layout and accent rules, sound design |
-| **Themes / fonts / effects** | 14 themes, ~23 font pairings, raw AE → Remotion recipes for anything outside the kit |
+| **Director mode** (`references/director.md`) | Turns a short prompt into a full brief without a questionnaire: format, length, theme by topic, language, script as short beats, then builds |
+| **Built-in voice-over** (`tools/voice.py`) | Neural TTS (free Microsoft Edge voices, 100+ languages) with **per-word timings**, loudness-normalized. Every on-screen word animates on the frame it is spoken |
+| **Sound design** (`tools/sfx.py`) | 18 synthesized SFX (whoosh, hit, boom, riser, slash, glitch, pop, key, shimmer, shutter…) and a generated music bed at any BPM. No samples, no licenses |
+| **Component kit** (`kit/`) | 70+ Remotion components: kinetic text, zoom-blur, warp streaks, speed lines, light slashes, camera, transitions, AE-style UI mocks, voice timeline |
+| **Reference trailer** (`examples/Trailer.tsx`) | A voiced 72-second, 36-beat kinetic trailer in Russian, rebuilt from a frame-by-frame study of a top tech promo — the quality bar |
+| **Reference breakdown** (`references/reference-breakdown.md`) | That study as a pattern library: what every beat does and which component makes it |
+| **Editing grammar / themes / fonts / effects** | Rhythm, cut types, shot vocabulary; 14 themes; ~23 font pairings; raw AE → Remotion recipes |
 
 ### Kit components
 
 | Group | Components |
 |---|---|
-| Text | `SlamText` (slam-in), `WhipIn` (slide + directional blur), `Letters` (rise / pop / drop / blur), `Words` (accent words), `MaskReveal`, `Typewriter` (highlighted tokens), `Counter`, `Outline`, `Extrude` (3D text), `EchoStack`, `Stretch`, `Glitch` (RGB + slices), `Highlight`, `Underline`, `CheckerText`, `punch()` |
-| Effects | `Smear` (directional motion blur), `Glow`, `Grain`, `Vignette`, `Scanlines`, `DotGrid`, `Orb`, `Bokeh`, `LightStreak`, `Sparks`, `Starburst`, `Shockwave`, `Cube3D`, `Viewfinder`, `HudRing`, `Letterbox`, `Flash` |
+| Voice & sound | `layoutBeats` (shot length = spoken line), `VoiceTimeline` (shots + voice + SFX + ducked music), `Sfx`, `TypingSfx`, `Captions` (TikTok word captions) |
+| Kinetic | `ZoomIn` (radial zoom blur), `WarpStreaks`, `SpeedLines`, `Slash` (light saber), `Pops`, `ScrollStack` (vertical camera through lines), `Wobble`, `WeightShift`, `Scatter`, `MorphShape`, `RepeatStretch`, `DiagonalBand`, `GlowPill`, `LightSweep` |
+| Text | `Fit`, `SlamText`, `WhipIn`, `Letters` (rise / pop / drop / blur), `Words`, `MaskReveal`, `Typewriter`, `Counter`, `Outline`, `Extrude` (3D), `EchoStack`, `Stretch`, `Glitch`, `Highlight`, `Underline`, `CheckerText`, `TerminalLine`, `GradientText`, `punch()` |
+| Effects | `Smear` (directional blur), `Glow`, `Grain`, `Vignette`, `Scanlines`, `DotGrid`, `Orb`, `Bokeh`, `LightStreak`, `Sparks`, `Sparkle`, `Starburst`, `Shockwave`, `Cube3D`, `Viewfinder`, `HudRing`, `Letterbox`, `Flash`, `Bulb` |
 | Camera | `Camera` (push-in, drift, impact shakes, roll), `Parallax`, `Tilt3D` |
-| Transitions | `whip()`, `zoomThrough()`, `slices()` + official fade / slide / wipe / flip / clock wipe |
-| Mock UI | `PromptBox` (types itself), `Timeline` (AE-like keyframes), `NodeGraph` (glowing cables), `RenderBar`, `PlayerMock`, `Cursor` |
+| Transitions | `whip()`, `zoomThrough()`, `zoomBlur()`, `streak()`, `slices()` + official fade / slide / wipe / flip / clock wipe |
+| AE-style UI | `CompGrid`, `TransformBox`, `LayerBars`, `KeyLanes`, `GraphCurve`, `EchoTower`, `Timeline`, `RenderBar`, `Ruler`, `Filmstrip`, `PlayerMock`, `PromptBox`, `ChatCard`, `NodeGraph`, `Cursor` |
 
 ## Styles (themes)
 
@@ -113,13 +117,13 @@ claude plugin install ae-motion@ae-motion-local
 
 Or from a local folder: `claude plugin marketplace add ./ae-motion-claude`.
 
-You need a Remotion project (`npx create-video@latest`) and Node.js. Extra packages (`@remotion/transitions`, `@remotion/motion-blur`, etc.) Claude installs as needed.
+You need Node.js and Python 3 (`pip install edge-tts numpy`). Claude sets up the Remotion project and installs packages itself. Voice-over needs internet (Edge TTS); without it a robotic offline Windows voice is used.
 
 ## Example
 
 > Make a 15-second Reels promo in the Neon Cyber style: "New collection. Available now."
 
-Claude picks the theme, writes the scene list, builds the composition with transitions, glow and grain, and renders preview stills.
+Claude picks the theme, writes the voice script, generates the voice-over with word timings, synthesizes SFX and a beat, builds every shot synced to the spoken words, checks stills and renders the mp4.
 
 ## Structure
 
@@ -130,9 +134,10 @@ ae-motion-claude/
     ├── .claude-plugin/plugin.json
     └── skills/motion-design/
         ├── SKILL.md
-        ├── kit/            ← easing, text, fx, camera, transitions, ui (+ index.ts)
-        ├── examples/KineticPromo.tsx
-        └── references/{director,editing,themes,fonts,effects}.md
+        ├── kit/            ← easing, text, fx, kinetic, camera, transitions, ui, audio (+ index.ts)
+        ├── tools/          ← voice.py (TTS + word timings), sfx.py (SFX + music)
+        ├── examples/       ← Trailer.tsx + trailer-script.json, KineticPromo.tsx, Showcase.tsx
+        └── references/{director,editing,reference-breakdown,themes,fonts,effects}.md
 ```
 
 ## Fonts

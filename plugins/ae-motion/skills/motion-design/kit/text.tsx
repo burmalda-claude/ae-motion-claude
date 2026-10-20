@@ -1,6 +1,7 @@
 import React from "react";
 import { interpolate, random, useCurrentFrame, useVideoConfig } from "remotion";
 import { noise2D } from "@remotion/noise";
+import { fitText } from "@remotion/layout-utils";
 import { EASE, clamp, mix, pop, prog } from "./easing";
 import { Smear } from "./fx";
 
@@ -301,3 +302,17 @@ export const CheckerText: React.FC<{ children: React.ReactNode; a?: string; b?: 
 /** Scale "punch" on a beat: 1 → peak → 1 over a few frames. Use on any element: style={{transform: `scale(${punch(frame, 30)})`}}. */
 export const punch = (frame: number, at: number, peak = 1.08, dur = 8) =>
   interpolate(frame, [at, at + 2, at + dur], [1, peak, 1], clamp);
+
+/** Text sized to fill `width` exactly (capped at `max` px). Needs @remotion/layout-utils and a loaded font. */
+export const Fit: React.FC<{ text: string; width: number; max?: number; fontFamily: string; fontWeight?: number | string; letterSpacing?: string; style?: React.CSSProperties }> = ({
+  text,
+  width,
+  max = 400,
+  fontFamily,
+  fontWeight = 900,
+  letterSpacing,
+  style,
+}) => {
+  const { fontSize } = fitText({ text, withinWidth: width, fontFamily, fontWeight, letterSpacing });
+  return <span style={{ fontFamily, fontWeight, letterSpacing, fontSize: Math.min(max, fontSize), lineHeight: 0.95, whiteSpace: "pre", ...style }}>{text}</span>;
+};

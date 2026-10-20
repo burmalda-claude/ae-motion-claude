@@ -6,25 +6,29 @@
 
 ## Что внутри
 
-Один скилл `motion-design`, который Claude подгружает сам, когда вы просите ролик, интро, титры, промо, reels и т.п. Вы пишете одну строку — Claude работает как режиссёр и моушн-дизайнер.
+Один скилл `motion-design`, который Claude подгружает сам, когда вы просите ролик, интро, титры, промо, reels и т.п. Вы пишете одну строку — Claude работает как режиссёр, моушн-дизайнер, монтажёр и звукорежиссёр.
 
 | Часть | Что делает |
 |---|---|
-| **Режиссёрский режим** (`references/director.md`) | Превращает короткий промпт в полное ТЗ без допроса: формат, длина, тема по смыслу ролика, язык, сценарий битами по 1–4 слова (хук → завязка → раскрытие → доказательства → кульминация → лого/призыв), и сразу собирает |
-| **Набор компонентов** (`kit/`) | ~45 готовых компонентов Remotion, которые Claude копирует в проект: кинетический текст, эффекты, камера, переходы, макеты интерфейсов |
-| **Эталонный ролик** (`examples/KineticPromo.tsx`) | Полное промо из 15 шотов в красно-чёрно-белом трейлерном стиле — планка качества |
-| **Правила монтажа** (`references/editing.md`) | Ритм склеек по сетке битов, 8 типов склеек, 14 типов шотов, правила вёрстки и акцентов, звук |
-| **Темы / шрифты / эффекты** | 14 тем, ~23 пары шрифтов, рецепты AE → Remotion для всего, чего нет в наборе |
+| **Режиссёрский режим** (`references/director.md`) | Превращает короткий промпт в полное ТЗ без допроса: формат, длина, тема по смыслу ролика, язык, сценарий короткими битами — и сразу собирает |
+| **Встроенная озвучка** (`tools/voice.py`) | Нейросетевой голос (бесплатные голоса Microsoft Edge, 100+ языков) с **таймингом каждого слова** и нормализацией громкости. Каждое слово на экране появляется в момент, когда его произносят |
+| **Звуковой дизайн** (`tools/sfx.py`) | 18 синтезированных эффектов (свист, удар, бум, райзер, «меч», глитч, поп, клавиши, звон, затвор…) и фоновый бит любого темпа. Без сэмплов и лицензий |
+| **Набор компонентов** (`kit/`) | 70+ компонентов Remotion: кинетический текст, зум-блюр, варп-полосы, линии скорости, световые разрезы, камера, переходы, интерфейсы в стиле AE, таймлайн под голос |
+| **Эталонный трейлер** (`examples/Trailer.tsx`) | Озвученный кинетический трейлер на 72 секунды и 36 битов на русском, собранный по покадровому разбору топового техно-промо — планка качества |
+| **Разбор эталона** (`references/reference-breakdown.md`) | Этот разбор как библиотека приёмов: что делает каждый бит и каким компонентом это собрать |
+| **Монтаж / темы / шрифты / эффекты** | Ритм, типы склеек, словарь шотов; 14 тем; ~23 пары шрифтов; рецепты AE → Remotion |
 
 ### Компоненты набора
 
 | Группа | Компоненты |
 |---|---|
-| Текст | `SlamText` (удар-появление), `WhipIn` (вылет с размытием в движении), `Letters` (подъём / поп / падение / размытие), `Words` (акцентные слова), `MaskReveal`, `Typewriter` (с подсветкой слов), `Counter`, `Outline`, `Extrude` (3D-текст), `EchoStack`, `Stretch`, `Glitch` (RGB + нарезка), `Highlight`, `Underline`, `CheckerText`, `punch()` |
-| Эффекты | `Smear` (направленное размытие), `Glow`, `Grain`, `Vignette`, `Scanlines`, `DotGrid`, `Orb`, `Bokeh`, `LightStreak`, `Sparks`, `Starburst`, `Shockwave`, `Cube3D`, `Viewfinder`, `HudRing`, `Letterbox`, `Flash` |
+| Голос и звук | `layoutBeats` (длина шота = длина фразы), `VoiceTimeline` (шоты + голос + эффекты + приглушаемая музыка), `Sfx`, `TypingSfx`, `Captions` (субтитры по словам как в TikTok) |
+| Кинетика | `ZoomIn` (радиальный зум-блюр), `WarpStreaks`, `SpeedLines`, `Slash` (световой меч), `Pops`, `ScrollStack` (вертикальный проезд камеры), `Wobble`, `WeightShift`, `Scatter`, `MorphShape`, `RepeatStretch`, `DiagonalBand`, `GlowPill`, `LightSweep` |
+| Текст | `Fit`, `SlamText`, `WhipIn`, `Letters` (подъём / поп / падение / размытие), `Words`, `MaskReveal`, `Typewriter`, `Counter`, `Outline`, `Extrude` (3D), `EchoStack`, `Stretch`, `Glitch`, `Highlight`, `Underline`, `CheckerText`, `TerminalLine`, `GradientText`, `punch()` |
+| Эффекты | `Smear` (направленное размытие), `Glow`, `Grain`, `Vignette`, `Scanlines`, `DotGrid`, `Orb`, `Bokeh`, `LightStreak`, `Sparks`, `Sparkle`, `Starburst`, `Shockwave`, `Cube3D`, `Viewfinder`, `HudRing`, `Letterbox`, `Flash`, `Bulb` |
 | Камера | `Camera` (наезд, дрейф, тряска на ударах, крен), `Parallax`, `Tilt3D` |
-| Переходы | `whip()`, `zoomThrough()`, `slices()` + стандартные fade / slide / wipe / flip / clock wipe |
-| Макеты UI | `PromptBox` (печатает сам), `Timeline` (ключи как в AE), `NodeGraph` (светящиеся связи), `RenderBar`, `PlayerMock`, `Cursor` |
+| Переходы | `whip()`, `zoomThrough()`, `zoomBlur()`, `streak()`, `slices()` + стандартные fade / slide / wipe / flip / clock wipe |
+| Интерфейс в стиле AE | `CompGrid`, `TransformBox`, `LayerBars`, `KeyLanes`, `GraphCurve`, `EchoTower`, `Timeline`, `RenderBar`, `Ruler`, `Filmstrip`, `PlayerMock`, `PromptBox`, `ChatCard`, `NodeGraph`, `Cursor` |
 
 ## Стили (темы)
 
@@ -113,13 +117,13 @@ claude plugin install ae-motion@ae-motion-local
 
 Или из локальной папки: `claude plugin marketplace add ./ae-motion-claude`.
 
-Нужен проект Remotion (`npx create-video@latest`) и Node.js. Дополнительные пакеты (`@remotion/transitions`, `@remotion/motion-blur` и др.) Claude поставит сам по мере надобности.
+Нужны Node.js и Python 3 (`pip install edge-tts numpy`). Проект Remotion и пакеты Claude ставит сам. Для озвучки нужен интернет (Edge TTS); без него используется роботизированный офлайн-голос Windows.
 
 ## Пример
 
 > Сделай промо-ролик на 15 секунд для Reels в стиле Neon Cyber: «Новая коллекция. Уже в продаже».
 
-Claude выберет тему, распишет сцены, соберёт композицию с переходами, glow и зерном и отрендерит превью кадров.
+Claude выберет тему, напишет текст озвучки, сгенерирует голос с таймингом слов, синтезирует эффекты и бит, соберёт каждый шот под произносимые слова, проверит кадры и отрендерит mp4.
 
 ## Структура
 
@@ -130,9 +134,10 @@ ae-motion-claude/
     ├── .claude-plugin/plugin.json
     └── skills/motion-design/
         ├── SKILL.md
-        ├── kit/            ← easing, text, fx, camera, transitions, ui (+ index.ts)
-        ├── examples/KineticPromo.tsx
-        └── references/{director,editing,themes,fonts,effects}.md
+        ├── kit/            ← easing, text, fx, kinetic, camera, transitions, ui, audio (+ index.ts)
+        ├── tools/          ← voice.py (TTS + word timings), sfx.py (SFX + music)
+        ├── examples/       ← Trailer.tsx + trailer-script.json, KineticPromo.tsx, Showcase.tsx
+        └── references/{director,editing,reference-breakdown,themes,fonts,effects}.md
 ```
 
 ## Шрифты

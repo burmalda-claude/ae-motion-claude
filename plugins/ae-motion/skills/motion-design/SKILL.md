@@ -1,59 +1,72 @@
 ---
 name: motion-design
-description: Turn a short prompt into a polished After Effects-style video with Remotion (React). Use when the user asks for any video, promo, ad, intro, outro, trailer, title animation, kinetic typography, reels/shorts/TikTok edit, lower thirds, logo reveal, explainer, or says "like After Effects / Alight Motion". Includes a ready component kit (slam/whip/stretch/glitch text, glow, grain, particles, light streaks, sparks, starbursts, camera shake, whip/zoom/slice transitions, mock UI like prompt box, timeline, node graph, render bar), a director workflow, editing grammar, 14 themes and font pairings.
+description: Turn a short prompt into a polished, voiced After Effects-style video with Remotion (React). Use when the user asks for any video, promo, ad, intro, outro, trailer, title animation, kinetic typography, reels/shorts/TikTok edit, lower thirds, logo reveal, explainer, or says "like After Effects / Alight Motion". Includes built-in voice-over with per-word timing (words animate exactly when spoken), procedural sound effects and music, a component kit (zoom-blur/slam/whip/stretch/wobble/glitch text, warp streaks, speed lines, light slashes, glow, particles, camera, AE-style UI mocks), a director workflow, editing grammar, 14 themes and font pairings.
 ---
 
-# Motion design: prompt → After Effects-quality video
+# Motion design: prompt → voiced, After Effects-quality video
 
-You are the motion designer **and** the director. The user gives one line; you decide format, script, theme, pacing and effects, then build it with the kit. Remotion API details live in the `remotion:*` skills if installed — this skill is about taste and speed.
+You are the motion designer, editor **and** sound designer. The user gives one line; you decide format, script, voice, theme, pacing, effects and sound, then build it with the kit. Remotion API details live in the `remotion:*` skills if installed — this skill is about taste, sync and speed.
 
 ## Workflow
 
-1. **Direct** — read `references/director.md`. Extract the brief, pick a theme (`references/themes.md`) and fonts (`references/fonts.md`), write the beat list. Print a 3–5 line plan. Don't interrogate the user; ask at most one question and only for a real blocker.
+1. **Direct** — read `references/director.md`. Extract the brief, pick a theme (`references/themes.md`) and fonts (`references/fonts.md`), write the script as beats. Print a 3–5 line plan. Ask at most one question, only for a real blocker.
 2. **Set up the project** (if there is none):
    - `npx create-video@latest` → Blank template, then `npm i`.
-   - Copy `kit/` from this skill into `src/kit/` (all files). Copy `examples/KineticPromo.tsx` only if useful as a starting point.
-   - Install what the kit uses: `npx remotion add @remotion/google-fonts @remotion/transitions @remotion/noise @remotion/paths` (plus `@remotion/motion-blur`, `@remotion/lottie`, `@remotion/media-utils` if needed).
-3. **Build** — one small component per shot, a `SHOTS: [Component, frames][]` table, `<Series>` (hard cuts) or `<TransitionSeries>` (with `whip()`, `zoomThrough()`, `slices()`, or official `fade/slide/wipe`). Follow `references/editing.md` for rhythm and shot variety. Use `references/effects.md` for anything the kit doesn't cover.
-4. **Check** — `npx remotion still <Id> --frame=<n> out/check-<n>.png` on 3–4 key frames (hook, logo hit, busiest shot, end). Look at them with the Read tool. Fix overflow, unreadable text, empty frames, wrong fonts.
-5. **Render** — `npx remotion render <Id> out/video.mp4` (add `--concurrency=50%` on weak PCs). Tell the user where the file is.
+   - Copy `kit/` from this skill into `src/kit/`; copy `tools/` anywhere (they are Python scripts).
+   - `npx remotion add @remotion/google-fonts @remotion/transitions @remotion/noise @remotion/paths @remotion/layout-utils`
+   - tsconfig: `"resolveJsonModule": true` (voice timings are imported as JSON).
+3. **Voice** (default ON unless the user says no voice) — write `script.json` = `[{"id","text"}]`, one entry per beat, then:
+   `pip install edge-tts` once, `python tools/voice.py script.json . --voice ru-RU-DmitryNeural --rate +12%`
+   → `public/vo/<id>.mp3` + `src/voice.json` with **per-word start/end times**. Pick the voice by the user's language (see voice.py docstring). Text that TTS would mispronounce (English brand names in a Russian script) — write phonetically in `text` and keep the real spelling on screen.
+4. **Sound** — `python tools/sfx.py sfx .` (18 synthesized SFX in `public/sfx/`), and after you know the length `python tools/sfx.py beat . --bpm 128 --seconds <len+2>` (music bed). User-supplied music in `public/` always wins over the generated beat.
+5. **Build** — one component per beat receiving `ShotProps` (`w(i)` = frame word *i* is spoken, `we(i)`, `dur`). Put beats in a `Beat[]` with `vo`, `sfx`, `min`, `tail`, `lead`; `layoutBeats()` makes every shot exactly as long as its line; `<VoiceTimeline placed music>` plays shots + voice + SFX + ducked music. **Reference implementation: `examples/Trailer.tsx` + `examples/trailer-script.json`** — read it first; it is the quality bar.
+6. **Check** — render stills of 4–6 key frames (`npx remotion still <Id> --frame=<n> out/c<n>.png`) and Read them. Fix overflow, empty frames, wrong fonts, words appearing before they are spoken.
+7. **Render** — `npx remotion render <Id> out/video.mp4 --concurrency=50%`. Tell the user where the file is.
+
+## Sync rules (what makes it feel edited, not generated)
+
+- **Every on-screen word lands on its spoken frame**: `delay={w(i)}`. Never hard-code word delays when there is a voice line.
+- **Background/scene changes happen on words**, not between them: `const stage = f < w(1) ? 0 : f < w(2) ? 1 : 2`.
+- **SFX on the same frames**: hit/boom on slams, whoosh on whips and scene flips, slash on light slashes, pop on pops, click/key on UI, riser into a logo, shimmer on sparkles. 1–3 SFX per beat, never more.
+- **Silence is a tool**: a beat with no voice (`min` only) is a breath — use it for the logo hit or a visual-only flourish.
+- Music ducks under the voice automatically (`duckTo`); keep music 0.25–0.4.
 
 ## The kit (`kit/`, import from `./kit`)
 
 | File | Components |
 |---|---|
 | `easing.ts` | `EASE` (easy, out, in, inOut, back), `prog`, `pop`, `mix`, `envelope`, `beatFrames`, `clamp` |
-| `text.tsx` | `SlamText`, `WhipIn`, `Letters` (rise/pop/drop/blur), `Words` (with accent words), `MaskReveal`, `Typewriter` (highlighted tokens), `Counter`, `Outline`, `Extrude` (3D), `EchoStack`, `Stretch`, `Glitch`, `Highlight`, `Underline`, `CheckerText`, `punch()` |
+| `audio.tsx` | `layoutBeats`, `VoiceTimeline`, `Sfx`, `TypingSfx`, `Captions` (TikTok word captions), types `Beat`, `ShotProps`, `VoiceData` |
+| `kinetic.tsx` | `ZoomIn` (radial zoom-blur entrance), `WarpStreaks`, `SpeedLines`, `Slash` (light saber), `Pops`, `ScrollStack` (vertical camera through lines), `Wobble`, `WeightShift`, `Scatter`, `MorphShape`, `Filmstrip`, `GlowPill`, `CompGrid`, `TransformBox`, `LayerBars`, `KeyLanes`, `GraphCurve`, `EchoTower`, `DiagonalBand`, `TerminalLine`, `GradientText`, `Sparkle`, `Ruler`, `Bulb`, `RepeatStretch`, `ChatCard`, `LightSweep` |
+| `text.tsx` | `Fit` (fill width exactly), `SlamText`, `WhipIn`, `Letters` (rise/pop/drop/blur), `Words`, `MaskReveal`, `Typewriter`, `Counter`, `Outline`, `Extrude` (3D), `EchoStack`, `Stretch`, `Glitch`, `Highlight`, `Underline`, `CheckerText`, `punch()` |
 | `fx.tsx` | `Smear` (directional blur), `Glow`, `Grain`, `Vignette`, `Scanlines`, `DotGrid`, `Orb`, `Bokeh`, `LightStreak`, `Sparks`, `Starburst`, `Shockwave`, `Cube3D`, `Viewfinder`, `HudRing`, `Letterbox`, `Flash` |
 | `camera.tsx` | `Camera` (push-in, drift, `hits` shakes, roll), `Parallax`, `Tilt3D` |
-| `transitions.tsx` | presentations `whip()`, `zoomThrough()`, `slices()` for `<TransitionSeries>` |
+| `transitions.tsx` | presentations `whip()`, `zoomThrough()`, `zoomBlur()`, `streak()`, `slices()` for `<TransitionSeries>` |
 | `ui.tsx` | `PromptBox`, `Timeline`, `RenderBar`, `NodeGraph`, `Cursor`, `PlayerMock` |
 
-All animation props are in **frames relative to the shot** (`delay`, `dur`, `hits`). Components read `useCurrentFrame()`, so they restart inside each `Series.Sequence`.
+All animation props are in **frames relative to the shot**. Components read `useCurrentFrame()`, so they restart inside each beat.
 
-`examples/KineticPromo.tsx` is a complete 15-shot reference in the Kinetic Red style — read it before building a kinetic video; match its density.
+Examples: `Trailer.tsx` (voiced, 36 beats, the target style), `KineticPromo.tsx` (silent, 15 shots), `Showcase.tsx` (every component with captions).
 
 ## Rules that separate "AE" from "PowerPoint"
 
-- **Nothing linear** except constant drift. Entrances `EASE.out` or springs, exits `EASE.in`, camera `EASE.inOut`.
-- **Animate 2–3 properties at once**: position + scale + blur/opacity. Fast moves get `Smear`/motion blur.
-- **Stagger and overlap**: letters 1–2 f, words 3–5 f, elements start before the previous one ends.
-- **Every shot has life**: `Camera` push or drift, particles, pulsing glow. No frozen frames.
-- **Depth**: background texture (grid/orb/gradient) → mid (shapes, UI) → foreground (type) → overlays (grain, vignette).
-- **Variety**: ≥ 4 different shot types per video (see editing.md). Same animation twice in a row = boring.
-- **Pace**: kinetic promos 4–24 f per shot; calm themes 45–90 f. Hold the final logo/CTA ≥ 1.5 s.
-- **Type**: ≤ 2 families + mono for UI. Huge headlines (fill 70–90 % width), tight tracking. Check Cyrillic support.
+- **Nothing appears plainly.** Words enter with `ZoomIn` (zoom blur), `WhipIn` (smear), `Stretch`, `Letters drop`, `MaskReveal` — pick by beat energy.
+- **Hard color flips** between dark / paper / red on word boundaries are the main "transition" of kinetic edits.
+- **Nothing linear** except constant drift. Entrances `EASE.out`/springs, exits `EASE.in`, camera `EASE.inOut`.
+- **Every shot has life**: `Camera` push/shake, particles, orb glow, grid drift. No frozen frames.
+- **Depth**: background texture → mid (shapes, UI mocks) → type → overlays (grain, vignette).
+- **Variety**: ≥ 6 shot types per minute (editing.md). Never the same entrance twice in a row.
+- **Type**: wide heavy display for slams (Unbounded / Archivo Black), condensed for long lines (Oswald), one italic serif accent line, mono for UI. Use `Fit` so words fill the frame. Check Cyrillic.
 - **Safe areas**: 9:16 — keep text out of the top 10 % and bottom 20 %.
 
-## Polish checklist (run before rendering)
+## Polish checklist
 
-- [ ] Hook in the first 1 s, logo/CTA held at the end
-- [ ] Grain + vignette on the whole composition
-- [ ] Camera movement or shake in every shot
-- [ ] Motion blur/smear on whips and fast slides
-- [ ] At least one logo-hit moment (streak + sparks + flash + glow)
-- [ ] Accent color only on 1 word per shot
-- [ ] Stills checked: no text overflowing the frame, no blank frames
+- [ ] Hook in the first second (dot → warp → zoom-blur word + hit)
+- [ ] Words land on spoken frames; SFX on the same frames
+- [ ] A logo-hit beat (streak + sparks + shockwave + flash + glow + boom)
+- [ ] Music ducked under voice; final fade to black
+- [ ] Grain + vignette over everything
+- [ ] Stills checked: no overflow, no blank frames
 
 ## Formats
 
@@ -66,18 +79,21 @@ All animation props are in **frames relative to the shot** (`delay`, `dur`, `hit
 ## Gotchas
 
 - `AbsoluteFill` is `flex-direction: column` by default — pass `flexDirection: "row"` for side-by-side layouts.
-- Windows: if render fails with `spawn ...chrome-headless-shell.exe ENOENT` while the file exists, the project path is longer than 260 chars. Create a junction with a short path (`New-Item -ItemType Junction -Path $env:TEMP\vid -Target <project>`) and run Remotion from there.
+- Google font `subsets` must be typed: `["cyrillic", "latin"] as ("cyrillic" | "latin")[]`.
+- edge-tts occasionally returns "No audio was received" — voice.py retries 4×, then falls back to offline Windows SAPI (robotic, estimated timings). Tell the user if the fallback was used.
+- TTS files end with ~0.7 s silence; `layoutBeats` paces by the last spoken word (`spokenEnd`), so don't pad manually.
+- Windows: `spawn ...chrome-headless-shell.exe ENOENT` while the file exists = path longer than 260 chars. Create a junction with a short path (`New-Item -ItemType Junction -Path $env:TEMP\vid -Target <project>`) and run Remotion from there.
 - Mixing presentations in one array needs `TransitionPresentation<any>` typing (see `examples/Showcase.tsx`).
-- `examples/Showcase.tsx` renders every kit component once with captions — the quickest way to see what the kit can do (`npx remotion studio`).
 
 ## Limits (be honest with the user)
 
-Remotion renders HTML/CSS/SVG/WebGL. Real 3D scenes need `@remotion/three` (three.js); particles here are 2D; there is no optical-flow time remap or AI rotoscoping. For effects beyond the kit, prefer Lottie exports from AE (`@remotion/lottie`) or footage in `public/`.
+Remotion renders HTML/CSS/SVG/WebGL. Real 3D scenes need `@remotion/three`; particles here are 2D; radial/zoom blur is faked with echo copies. Generated music is a simple synth beat — suggest the user's own track for anything important. Edge TTS needs internet and sends the script text to Microsoft.
 
 ## References
 
 - `references/director.md` — prompt → brief → beat list, defaults, theme by topic.
-- `references/editing.md` — rhythm, cut types, 14 shot types, layout, sound design.
+- `references/editing.md` — rhythm, cut types, shot vocabulary, layout, sound design.
+- `references/reference-breakdown.md` — frame-by-frame breakdown of a top kinetic trailer: what each beat does.
 - `references/themes.md` — 14 themes: palette + fonts + motion character.
 - `references/fonts.md` — Google Fonts pairings, Cyrillic support.
 - `references/effects.md` — raw AE effect → Remotion recipes (for things outside the kit).

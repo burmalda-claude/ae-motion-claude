@@ -1,5 +1,5 @@
 {
   "name": "ae-motion",
-  "version": "0.2.1",
-  "description": "Prompt → After Effects-style video in Remotion: director workflow, component kit (kinetic text, glow, particles, camera, transitions, mock UI), 14 themes, font pairings."
+  "version": "0.3.0",
+  "description": "Prompt → voiced After Effects-style video in Remotion: word-synced voice-over, procedural SFX and music, 70+ kinetic components, director workflow, 14 themes."
 }
