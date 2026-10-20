@@ -1,0 +1,61 @@
+{
+  "id": "reaction",
+  "name": "Reaction / Commentary",
+  "purpose": "Reactions, commentary, breakdowns.",
+  "formats": [
+    "16:9",
+    "9:16"
+  ],
+  "fonts": {
+    "display": "Inter 800 / Montserrat 800"
+  },
+  "palette": {
+    "bg": "#0b0b0f",
+    "accent": "#8b5cf6",
+    "text": "#ffffff"
+  },
+  "grade": "punch",
+  "text": [
+    "LowerThird with nickname",
+    "CommentBubble overlays",
+    "Captions"
+  ],
+  "timing": {
+    "entrance_f": [
+      4,
+      8
+    ],
+    "exit_f": 4,
+    "shot_f": "follows speech"
+  },
+  "effects": [
+    "PiP",
+    "CommentBubble",
+    "EmojiPop",
+    "ZoomTo(emotion)",
+    "LowerThird",
+    "Captions"
+  ],
+  "exits": [
+    "none",
+    "zoom"
+  ],
+  "audio": {
+    "source": "your recording via tools/transcribe.py",
+    "music": "optional lofi ducked",
+    "cut": "pop on reactions",
+    "beat": "none"
+  },
+  "example": "/ae-motion:reaction — PiP-рамка + всплывающие комментарии зрителей",
+  "trigger": "/ae-motion:reaction",
+  "sizes": {
+    "16:9": [
+      1920,
+      1080
+    ],
+    "9:16": [
+      1080,
+      1920
+    ]
+  }
+}

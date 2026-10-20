@@ -1,0 +1,63 @@
+{
+  "id": "clip",
+  "name": "Podcast / Clip",
+  "purpose": "Cut long podcasts/interviews into Reels/Shorts clips with hooks and subtitles.",
+  "formats": [
+    "9:16",
+    "1:1"
+  ],
+  "fonts": {
+    "subs": "Montserrat 800",
+    "labels": "Inter 700"
+  },
+  "palette": {
+    "bg": "#000000",
+    "accent": "#ffd400",
+    "text": "#ffffff"
+  },
+  "grade": "news",
+  "text": [
+    "hook title 0–2 s (big, top)",
+    "Captions (word-by-word, stroke + accent on current word)",
+    "LowerThird speaker labels",
+    "b-roll text cards for key numbers"
+  ],
+  "timing": {
+    "entrance_f": [
+      4,
+      8
+    ],
+    "exit_f": 4,
+    "shot_f": "follows transcript lines"
+  },
+  "effects": [
+    "Captions",
+    "LowerThird",
+    "ProgressBar",
+    "EmojiPop",
+    "StatCard",
+    "Camera(push 0.03)",
+    "punch on topic change"
+  ],
+  "exits": [
+    "none",
+    "zoom"
+  ],
+  "audio": {
+    "source": "your recording via tools/transcribe.py --from/--to",
+    "music": "optional lofi bed ducked under speech",
+    "beat": "drop + whoosh on topic change"
+  },
+  "example": "/ae-motion:clip podcast.mp3 — 5 клипов по 30 сек с хуками и субтитрами",
+  "trigger": "/ae-motion:clip",
+  "sizes": {
+    "9:16": [
+      1080,
+      1920
+    ],
+    "1:1": [
+      1080,
+      1080
+    ]
+  }
+}

@@ -1,0 +1,93 @@
+{
+  "id": "edit",
+  "name": "Edit",
+  "purpose": "Hard short-form edit about any subject: fast cuts, beat hits, aura/glitch, voice-over.",
+  "formats": [
+    "9:16",
+    "16:9",
+    "1:1"
+  ],
+  "fonts": {
+    "display": "Unbounded 900",
+    "condensed": "Oswald 700"
+  },
+  "palette": {
+    "bg": "#050605",
+    "accent": "#b6ff00",
+    "text": "#ffffff"
+  },
+  "grade": "punch",
+  "text": [
+    "one word per beat, Fit to width",
+    "neon glow on hero words",
+    "Slide / ZoomIn / WhipIn entrances 3–5 f"
+  ],
+  "timing": {
+    "entrance_f": [
+      3,
+      5
+    ],
+    "exit_f": 3,
+    "shot_f": [
+      12,
+      60
+    ]
+  },
+  "effects": [
+    "ZoomIn",
+    "WhipIn",
+    "Slide",
+    "Glitch",
+    "Chroma",
+    "Camera(hits)",
+    "SpeedLines",
+    "WarpStreaks",
+    "LightStreak",
+    "Sparks",
+    "Shockwave",
+    "Flash",
+    "Starburst",
+    "Pops",
+    "Grain",
+    "Vignette"
+  ],
+  "exits": [
+    "zoom",
+    "slice",
+    "whipL",
+    "whipR",
+    "streakY",
+    "spin"
+  ],
+  "audio": {
+    "voice": "en-US-BrianMultilingualNeural",
+    "rate": "+8%",
+    "musicStyle": "phonk",
+    "bpm": 140,
+    "sections": [
+      "build",
+      "stop",
+      "drop",
+      "build",
+      "drop"
+    ],
+    "cut": "thump+whoosh on every cut",
+    "beat": "bg flips + punch zoom on every beat in drops"
+  },
+  "example": "/ae-motion:edit — 20-сек эдит про фикус с электрической аурой",
+  "trigger": "/ae-motion:edit",
+  "sizes": {
+    "9:16": [
+      1080,
+      1920
+    ],
+    "16:9": [
+      1920,
+      1080
+    ],
+    "1:1": [
+      1080,
+      1080
+    ]
+  }
+}

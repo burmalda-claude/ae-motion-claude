@@ -1,0 +1,74 @@
+{
+  "id": "tutorial",
+  "name": "Tutorial / Explainer",
+  "purpose": "Tutorials, guides, how-tos, screen recordings.",
+  "formats": [
+    "16:9",
+    "9:16"
+  ],
+  "fonts": {
+    "data": "Inter 900 / Roboto Black",
+    "subs": "Oswald 600",
+    "code": "JetBrains Mono"
+  },
+  "palette": {
+    "bg": "#0f172a",
+    "accent": "#2f6bff",
+    "text": "#ffffff"
+  },
+  "grade": "news",
+  "text": [
+    "StepBadge per step",
+    "ChapterCard between sections",
+    "Callout labels",
+    "mono for code"
+  ],
+  "timing": {
+    "entrance_f": [
+      6,
+      10
+    ],
+    "exit_f": 6,
+    "shot_f": [
+      60,
+      240
+    ]
+  },
+  "effects": [
+    "StepBadge",
+    "Callout",
+    "HighlightBox",
+    "ZoomTo",
+    "ChapterCard",
+    "ProgressBar",
+    "Cursor",
+    "TypeOn"
+  ],
+  "exits": [
+    "none",
+    "whipL"
+  ],
+  "audio": {
+    "voice": "en-US-AndrewMultilingualNeural",
+    "rate": "+0%",
+    "musicStyle": "lofi",
+    "bpm": 90,
+    "sections": [
+      "ui"
+    ],
+    "cut": "click on step change",
+    "beat": "soft bed, never over speech"
+  },
+  "example": "/ae-motion:tutorial — авто-разметка шагов и подсветка областей экрана",
+  "trigger": "/ae-motion:tutorial",
+  "sizes": {
+    "16:9": [
+      1920,
+      1080
+    ],
+    "9:16": [
+      1080,
+      1920
+    ]
+  }
+}

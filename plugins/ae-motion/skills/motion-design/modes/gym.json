@@ -1,0 +1,77 @@
+{
+  "id": "gym",
+  "name": "Gym / Motivation",
+  "purpose": "Motivation edits, sport, sigma content.",
+  "formats": [
+    "9:16",
+    "16:9"
+  ],
+  "fonts": {
+    "display": "Anton / Archivo Black / Bebas Neue (Cyr: Oswald 700, Russo One)"
+  },
+  "palette": {
+    "bg": "#000000",
+    "accent": "#ff2a3d",
+    "text": "#ffffff"
+  },
+  "grade": "punch",
+  "text": [
+    "ONE word per frame, Fit width",
+    "SlamText on every beat",
+    "StatCard / TimerDisplay / rep counter",
+    "final quote"
+  ],
+  "timing": {
+    "entrance_f": [
+      2,
+      4
+    ],
+    "exit_f": 3,
+    "shot_f": [
+      8,
+      30
+    ]
+  },
+  "effects": [
+    "SlamText",
+    "StatCard",
+    "TimerDisplay",
+    "Counter(reps)",
+    "Camera(hits shake 40)",
+    "Flash",
+    "Chroma",
+    "SpeedLines",
+    "Grade(punch)",
+    "Grain"
+  ],
+  "exits": [
+    "zoom",
+    "drop",
+    "slice"
+  ],
+  "audio": {
+    "voice": "en-US-BrianMultilingualNeural",
+    "rate": "-4%",
+    "pitch": "-8Hz",
+    "musicStyle": "phonk",
+    "bpm": 140,
+    "sections": [
+      "build",
+      "drop"
+    ],
+    "cut": "thump+flash+shake on every beat",
+    "beat": "slam on beat, hold on final quote"
+  },
+  "example": "/ae-motion:gym — 15-сек мотивашка с хуком, stat-картой и финальным quote",
+  "trigger": "/ae-motion:gym",
+  "sizes": {
+    "9:16": [
+      1080,
+      1920
+    ],
+    "16:9": [
+      1920,
+      1080
+    ]
+  }
+}

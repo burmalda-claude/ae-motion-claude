@@ -1,0 +1,76 @@
+{
+  "id": "amv",
+  "name": "Anime / AMV",
+  "purpose": "Anime edits, AMVs, opening-style.",
+  "formats": [
+    "9:16",
+    "16:9"
+  ],
+  "fonts": {
+    "display": "Bangers / Dela Gothic One",
+    "jp": "Noto Sans JP 900",
+    "accent": "Caveat"
+  },
+  "palette": {
+    "bg": "#ffffff",
+    "accent": "#e60012",
+    "accent2": "#ffd500",
+    "text": "#111111"
+  },
+  "grade": "punch",
+  "text": [
+    "JPText vertical columns",
+    "impact words with Starburst",
+    "handwritten accents"
+  ],
+  "timing": {
+    "entrance_f": [
+      2,
+      4
+    ],
+    "exit_f": 3,
+    "shot_f": [
+      8,
+      30
+    ]
+  },
+  "effects": [
+    "SpeedLines",
+    "ImpactFrame",
+    "MangaPanels",
+    "JPText",
+    "Starburst",
+    "Shockwave",
+    "Chroma",
+    "Glitch",
+    "Camera(hits shake 34)",
+    "zoomBlur"
+  ],
+  "exits": [
+    "zoom",
+    "slice",
+    "spin"
+  ],
+  "audio": {
+    "musicStyle": "jcore",
+    "bpm": 170,
+    "sections": [
+      "build",
+      "drop"
+    ],
+    "cut": "impact frame + hit on every beat",
+    "beat": "flash + impact frame on hits"
+  },
+  "example": "/ae-motion:amv — 20-сек эдит с impact-кадрами на каждый удар",
+  "trigger": "/ae-motion:amv",
+  "sizes": {
+    "9:16": [
+      1080,
+      1920
+    ],
+    "16:9": [
+      1920,
+      1080
+    ]
+  }
+}

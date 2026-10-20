@@ -1,0 +1,58 @@
+{
+  "id": "asmr",
+  "name": "ASMR / Satisfying",
+  "purpose": "ASMR, satisfying content, slow edits.",
+  "formats": [
+    "9:16",
+    "1:1"
+  ],
+  "fonts": {
+    "display": "Inter 200"
+  },
+  "palette": {
+    "bg": "#0e0e10",
+    "accent": "#a8e6cf",
+    "text": "#ffffff"
+  },
+  "grade": "dream",
+  "text": [
+    "minimal: 1–3 words per video, thin sans"
+  ],
+  "timing": {
+    "entrance_f": [
+      30,
+      60
+    ],
+    "exit_f": 30,
+    "shot_f": [
+      150,
+      300
+    ]
+  },
+  "effects": [
+    "Camera(push 0.03, drift 2)",
+    "Glow(soft)",
+    "Grain(0.03)"
+  ],
+  "exits": [
+    "none"
+  ],
+  "audio": {
+    "source": "original sound only",
+    "music": false,
+    "cut": "none",
+    "beat": "none"
+  },
+  "example": "/ae-motion:asmr — минимум графики, максимум плавности",
+  "trigger": "/ae-motion:asmr",
+  "sizes": {
+    "9:16": [
+      1080,
+      1920
+    ],
+    "1:1": [
+      1080,
+      1080
+    ]
+  }
+}

@@ -420,6 +420,9 @@ SFX = {
     "shutter": sfx_shutter,
     "stutter": sfx_stutter,
     "tape_stop": sfx_tape_stop,
+    "vine_boom": lambda: reverb(to_stereo(sat(tone(90, 45, 1.2) * env_ar(int(1.2 * SR), 0.001, 0.35), 3.0)), 0.9, 0.35),
+    "screech": lambda: fades(to_stereo(norm(sweep_filter(noise(0.9), 1500, 6000, "band", q=6) + tone(1900, 2300, 0.9, "saw") * 0.3) * env_ar(int(0.9 * SR), 0.002, 0.5), 0, 4), 0.001, 0.1),
+    "cash": lambda: reverb(to_stereo(norm(sum(np.sin(2 * np.pi * f * T(0.5)) * env_ar(int(0.5 * SR), 0.001, 0.12) for f in (2093, 2637, 3136)), 0.7)), 0.6, 0.2),
 }
 # sfx whose loudest moment is at the END (place so they end on the cue)
 ENDS_ON_CUE = {"swish_in", "riser", "riser_short", "reverse_swell"}
@@ -433,8 +436,20 @@ def hz(m):
     return 440.0 * 2 ** ((m - 69) / 12)
 
 
-def music(sections, total_s, bpm=123, key="A"):
-    """Arranged electronic bed with stems and sidechain pumping.
+# per-style stem gains + flags. One synth engine; genres are approximated by groove, gains and timbre.
+STYLES = {
+    "edm":       dict(kick=1.0, clap=1.0, hat=1.0, bass=1.0, pad=1.0, arp=1.0, pump=0.6),
+    "phonk":     dict(kick=1.1, clap=0.9, hat=1.2, bass=1.4, pad=0.4, arp=0.0, pump=0.4, cowbell=1.0),
+    "lofi":      dict(kick=0.6, clap=0.4, hat=0.7, bass=0.6, pad=1.2, arp=0.0, pump=0.2, swing=0.6, crackle=1.0, padcut=0.6),
+    "ambient":   dict(kick=0.0, clap=0.0, hat=0.0, bass=0.3, pad=1.6, arp=0.0, pump=0.0, padcut=0.8),
+    "cinematic": dict(kick=0.0, clap=0.0, hat=0.0, bass=0.8, pad=1.4, arp=0.0, pump=0.0, taiko=1.0, padcut=0.7),
+    "corporate": dict(kick=0.7, clap=0.6, hat=0.8, bass=0.7, pad=1.0, arp=1.3, pump=0.35, padcut=1.4),
+    "jcore":     dict(kick=1.0, clap=1.0, hat=1.6, bass=1.0, pad=0.8, arp=1.6, pump=0.5, hat16=1.0),
+}
+
+
+def music(sections, total_s, bpm=123, key="A", style="edm"):
+    """Arranged bed with stems and sidechain pumping. style: one of STYLES.
 
     sections: list of (start_s, mode) with mode in
       'intro' (pad + filtered bass), 'drop' (everything), 'break' (pad only, bright),
@@ -445,7 +460,11 @@ def music(sections, total_s, bpm=123, key="A"):
     beat = 60 / bpm
     root = 33 + NOTE[key]  # A1
     prog = [0, 0, 8, 7, 0, 0, 5, 7]  # i i VI v i i iv v
-    stems = {k: np.zeros((n, 2)) for k in ["kick", "clap", "hat", "bass", "pad", "arp", "roll"]}
+    st = STYLES[style]
+    stems = {k: np.zeros((n, 2)) for k in ["kick", "clap", "hat", "bass", "pad", "arp", "roll", "extra"]}
+    swing = st.get("swing", 0.5)  # 0.5 = straight 8ths
+    cowbell = butter(tone(800, 800, 0.18, "square") + tone(540, 540, 0.18, "square"), 2500, "low") * env_ar(int(0.18 * SR), 0.001, 0.06)
+    taiko = sat(tone(120, 60, 0.9) * env_ar(int(0.9 * SR), 0.002, 0.25), 2.0)
 
     def mode_at(t):
         m = sections[0][1]
@@ -472,7 +491,7 @@ def music(sections, total_s, bpm=123, key="A"):
         if md != "stop":
             pad = sum(tone(hz(chord + 24 + iv) * d, hz(chord + 24 + iv) * d, bar_len + 0.3, "saw") for iv in (0, 3, 7, 10) for d in (0.996, 1.004))
             cut = {"intro": 700, "drop": 1800, "break": 2600, "build": 1200, "ui": 900}.get(md, 1200)
-            pad = butter(pad, cut * 1.3, "low") * 0.1
+            pad = butter(pad, cut * 1.3 * st.get("padcut", 1.0), "low") * 0.1
             pad *= np.minimum(1, np.minimum(np.linspace(0, 6, len(pad)), np.linspace(6, 0, len(pad))))
             place(stems["pad"], to_stereo(pad, 0, 14), t0)
         for q in range(4):
@@ -488,8 +507,14 @@ def music(sections, total_s, bpm=123, key="A"):
             if mq in ("drop", "build") and q in (1, 3):
                 place(stems["clap"], clap, tb, 0.5)
             if mq in ("drop", "ui", "build"):
-                for e in range(2):
-                    place(stems["hat"], to_stereo(hat, 0.35 if e else -0.35), tb + e * beat / 2, 0.08 if e else 0.04)
+                for e in range(4 if st.get("hat16") else 2):
+                    off = (e * beat / 4) if st.get("hat16") else (beat * swing if e else 0)
+                    place(stems["hat"], to_stereo(hat, 0.35 if e % 2 else -0.35), tb + off, 0.08 if e % 2 else 0.04)
+            if st.get("cowbell") and mq == "drop":
+                for s16 in (0, 3, 6) if q % 2 == 0 else (2, 4):
+                    place(stems["extra"], to_stereo(cowbell, 0.2), tb + s16 * beat / 4, 0.09)
+            if st.get("taiko") and mq in ("drop", "build") and (q == 0 or (q == 3 and b % 2)):
+                place(stems["extra"], reverb(taiko, 1.2, 0.3), tb, 0.5)
             if mq == "build":
                 steps = 4 if b % 2 == 0 else 8
                 for s in range(steps):
@@ -518,8 +543,14 @@ def music(sections, total_s, bpm=123, key="A"):
     kenv = signal.lfilter([1 - np.exp(-1 / (0.09 * SR))], [1, -np.exp(-1 / (0.09 * SR))], kenv)
     kenv /= kenv.max() + 1e-9
     pump = 1 - 0.6 * np.clip(kenv * 1.6, 0, 1)
+    pump = 1 - (1 - pump) * (st["pump"] / 0.6)
     for k in ("pad", "bass", "arp"):
         stems[k] *= pump[:, None]
+    for k in ("kick", "clap", "hat", "bass", "pad", "arp"):
+        stems[k] *= st[k]
+    if st.get("crackle"):
+        cr = (_rng.random(n) > 0.9995) * _rng.uniform(-0.3, 0.3, n) + butter(noise(n / SR), 1200, "low") * 0.01
+        stems["extra"] += to_stereo(cr) * 0.5
     mix = sum(stems.values())
     # fade out at the end
     f = int(1.5 * SR)
@@ -551,6 +582,9 @@ def selftest():
         assert np.abs(x).max() > 0.05, k
     m = music([(0, "intro"), (4, "drop"), (8, "stop"), (9, "build"), (11, "ui")], 13, 123)
     assert m.shape == (13 * SR, 2) and np.isfinite(m).all()
+    for stl in STYLES:
+        x = music([(0, "drop")], 3, 120, "A", stl)
+        assert x.shape == (3 * SR, 2) and np.isfinite(x).all() and np.abs(x).max() > 0.01, stl
     stop = m[int(8.3 * SR) : int(8.8 * SR)]
     assert np.abs(stop).max() < np.abs(m).max() * 0.6, "stop section should be quieter"
     v = process_voice(np.sin(2 * np.pi * 200 * T(1.0)) * 0.3)

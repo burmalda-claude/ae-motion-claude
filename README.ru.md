@@ -30,6 +30,35 @@
 | Переходы | `whip()`, `zoomThrough()`, `zoomBlur()`, `streak()`, `slices()` + стандартные fade / slide / wipe / flip / clock wipe |
 | Интерфейс в стиле AE | `CompGrid`, `TransformBox`, `LayerBars`, `KeyLanes`, `GraphCurve`, `EchoTower`, `Timeline`, `RenderBar`, `Ruler`, `Filmstrip`, `PlayerMock`, `PromptBox`, `ChatCard`, `NodeGraph`, `Cursor` |
 
+## Команды / режимы
+
+Одна команда = весь стек (эффекты, текстовые пресеты, шрифты, тайминги, поведение по биту и звуку, форматы). Команды с пространством имён: `/ae-motion:cinematic` (просто `/cinematic` тоже работает, если имя не занято другим плагином). Пресеты лежат в `skills/motion-design/modes/<id>.json`.
+
+- **Live-превью:** `npx remotion studio` (обновляется на лету при правках).
+- **Разобрать на модификаторы:** скажите «разобрать» после команды — Claude выведет стек нумерованным списком модификаторов и сохранит его в `.ae-motion/modes/<id>.json` в проекте для ручной правки.
+- **Экспорт/импорт пресетов:** пресет — это один JSON-файл. Экспорт = скопировать его; импорт = положить в `.ae-motion/modes/` (файлы проекта важнее встроенных). «сохрани как пресет <имя>» записывает текущий стек.
+
+| Команда | Назначение | Автоэффекты (модификаторы) | Форматы | Пример |
+|---|---|---|---|---|
+| `/ae-motion:edit` | Hard short-form edit about any subject: fast cuts, beat hits, aura/glitch, voice-over. | ZoomIn, WhipIn, Slide, Glitch, Chroma, Camera(hits), SpeedLines… | 9:16, 16:9, 1:1 | 20-сек эдит про фикус с электрической аурой |
+| `/ae-motion:cinematic` | Trailers, teasers, cinematic intros in three acts (setup → build → payoff). | Letterbox, Grade(cinematic), Grain(0.1), Vignette, AnamorphicFlare, LightStreak, Camera(push 0.08, slow)… | 16:9, 2.39:1 | 30-сек тизер с тремя актами (setup → build → payoff) |
+| `/ae-motion:lyric` | Lyric videos, karaoke, text to music (your track). | KaraokeLine, Letters(pop), punch() on beats, EchoStack(trail), Glow on hits, Chroma, Grain | 16:9, 9:16, 1:1 | синхронный текст с подсветкой по словам |
+| `/ae-motion:clip` | Cut long podcasts/interviews into Reels/Shorts clips with hooks and subtitles. | Captions, LowerThird, ProgressBar, EmojiPop, StatCard, Camera(push 0.03), punch on topic change | 9:16, 1:1 | 5 клипов по 30 сек с хуками и субтитрами |
+| `/ae-motion:tutorial` | Tutorials, guides, how-tos, screen recordings. | StepBadge, Callout, HighlightBox, ZoomTo, ChapterCard, ProgressBar, Cursor… | 16:9, 9:16 | авто-разметка шагов и подсветка областей экрана |
+| `/ae-motion:gym` | Motivation edits, sport, sigma content. | SlamText, StatCard, TimerDisplay, Counter(reps), Camera(hits shake 40), Flash, Chroma… | 9:16, 16:9 | 15-сек мотивашка с хуком, stat-картой и финальным quote |
+| `/ae-motion:gaming` | Game highlights and frag montages (your footage + frag timecodes). | Hitmarker, KillFeed, ComboCounter, Glitch, Chroma, Scanlines, HudRing… | 16:9, 9:16 | hitmarkers и счётчики по таймкодам |
+| `/ae-motion:ad` | Ads, promos, product videos. | Callout, PriceTag, CTAButton, BeforeAfter, LightStreak(logo), MaskReveal, Words… | 16:9, 9:16, 1:1, 4:5 | 15-сек продуктовый ролик с 3 фичами и CTA |
+| `/ae-motion:amv` | Anime edits, AMVs, opening-style. | SpeedLines, ImpactFrame, MangaPanels, JPText, Starburst, Shockwave, Chroma… | 9:16, 16:9 | 20-сек эдит с impact-кадрами на каждый удар |
+| `/ae-motion:travel` | Vlogs, travel, lifestyle. | LowerThird, MapPin, DayCounter, QuoteCard, LightLeak, Grain, Letterbox… | 16:9, 9:16, 4:5 | авто-lower-thirds с локацией и счётчиком дня |
+| `/ae-motion:meme` | Memes, short jokes, reaction cuts. | MemeCaption, ZoomTo(punch-in), SlamText, Wobble(warp), Camera(shake), Wasted, EmojiPop | 9:16, 1:1 | top/bottom caption + zoom punch на ключевой фразе |
+| `/ae-motion:news` | News inserts, documentaries, reports. | LowerThird, BreakingBanner, Ticker, QuoteCard, Timeline, MapPin, Grade(news) | 16:9, 9:16 | нижняя плашка с именем спикера и тикер событий |
+| `/ae-motion:fashion` | Fashion edits, lookbooks, runway. | MaskReveal, Outline, Grade(fashion), Grain, Letterbox, slow motion (playbackRate 0.5), runway cut on step | 9:16, 4:5, 16:9 | лукбук с collection name и плавными переходами |
+| `/ae-motion:horror` | Horror edits, creepy content, dark aesthetic. | VHS, Flicker, Glitch, Scanlines, Chroma(red/green), Grain(0.15), ImpactFrame(jumpscare)… | 9:16, 16:9 | VHS-эдит с jumpscare на 3-й секунде |
+| `/ae-motion:wedding` | Weddings, anniversaries, events. | MaskReveal, QuoteCard, LightLeak, Bokeh, Grade(dream), Grain(0.04), slow motion | 16:9, 9:16, 1:1 | имя пары, дата и мягкий переход между сценами |
+| `/ae-motion:realestate` | Property tours, apartment reviews. | LowerThird, PriceTag, Callout, Camera(push 0.05, drift), Parallax, ProgressBar | 16:9, 9:16 | подписи комнат и цена в углу кадра |
+| `/ae-motion:asmr` | ASMR, satisfying content, slow edits. | Camera(push 0.03, drift 2), Glow(soft), Grain(0.03) | 9:16, 1:1 | минимум графики, максимум плавности |
+| `/ae-motion:reaction` | Reactions, commentary, breakdowns. | PiP, CommentBubble, EmojiPop, ZoomTo(emotion), LowerThird, Captions | 16:9, 9:16 | PiP-рамка + всплывающие комментарии зрителей |
+
 ## Стили (темы)
 
 Назовите тему в запросе (или не называйте — Claude подберёт по смыслу) — Claude возьмёт её палитру, шрифты и характер движения на весь ролик.

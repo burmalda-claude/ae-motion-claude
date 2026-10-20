@@ -1,0 +1,73 @@
+{
+  "id": "news",
+  "name": "News / Documentary",
+  "purpose": "News inserts, documentaries, reports.",
+  "formats": [
+    "16:9",
+    "9:16"
+  ],
+  "fonts": {
+    "display": "Roboto 900 / Inter 800",
+    "body": "Inter 500"
+  },
+  "palette": {
+    "bg": "#0b1a33",
+    "accent": "#c4161c",
+    "text": "#ffffff"
+  },
+  "grade": "news",
+  "text": [
+    "LowerThird name + role",
+    "BreakingBanner",
+    "Ticker",
+    "QuoteCard",
+    "strict grid, minimal decoration"
+  ],
+  "timing": {
+    "entrance_f": [
+      8,
+      12
+    ],
+    "exit_f": 8,
+    "shot_f": [
+      60,
+      180
+    ]
+  },
+  "effects": [
+    "LowerThird",
+    "BreakingBanner",
+    "Ticker",
+    "QuoteCard",
+    "Timeline",
+    "MapPin",
+    "Grade(news)"
+  ],
+  "exits": [
+    "none",
+    "whipL"
+  ],
+  "audio": {
+    "voice": "en-US-AndrewMultilingualNeural",
+    "rate": "+0%",
+    "musicStyle": "ambient",
+    "bpm": 100,
+    "sections": [
+      "intro"
+    ],
+    "cut": "hit on story change",
+    "beat": "neutral underscore"
+  },
+  "example": "/ae-motion:news — нижняя плашка с именем спикера и тикер событий",
+  "trigger": "/ae-motion:news",
+  "sizes": {
+    "16:9": [
+      1920,
+      1080
+    ],
+    "9:16": [
+      1080,
+      1920
+    ]
+  }
+}

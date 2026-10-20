@@ -1,0 +1,79 @@
+{
+  "id": "travel",
+  "name": "Vlog / Travel",
+  "purpose": "Vlogs, travel, lifestyle.",
+  "formats": [
+    "16:9",
+    "9:16",
+    "4:5"
+  ],
+  "fonts": {
+    "display": "Montserrat 800 / Poppins",
+    "quote": "Caveat 700"
+  },
+  "palette": {
+    "bg": "#101010",
+    "accent": "#ff7a18",
+    "text": "#ffffff"
+  },
+  "grade": "warm",
+  "text": [
+    "LowerThird location",
+    "DayCounter",
+    "handwritten aesthetic quotes"
+  ],
+  "timing": {
+    "entrance_f": [
+      10,
+      18
+    ],
+    "exit_f": 10,
+    "shot_f": [
+      60,
+      150
+    ]
+  },
+  "effects": [
+    "LowerThird",
+    "MapPin",
+    "DayCounter",
+    "QuoteCard",
+    "LightLeak",
+    "Grain",
+    "Letterbox",
+    "Grade(warm)",
+    "Camera(push slow)"
+  ],
+  "exits": [
+    "none",
+    "zoomOut"
+  ],
+  "audio": {
+    "voice": "en-US-AvaMultilingualNeural",
+    "rate": "+0%",
+    "musicStyle": "lofi",
+    "bpm": 85,
+    "sections": [
+      "intro",
+      "ui"
+    ],
+    "cut": "soft whoosh",
+    "beat": "duck under speech"
+  },
+  "example": "/ae-motion:travel — авто-lower-thirds с локацией и счётчиком дня",
+  "trigger": "/ae-motion:travel",
+  "sizes": {
+    "16:9": [
+      1920,
+      1080
+    ],
+    "9:16": [
+      1080,
+      1920
+    ],
+    "4:5": [
+      1080,
+      1350
+    ]
+  }
+}

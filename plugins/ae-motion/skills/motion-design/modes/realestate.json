@@ -1,0 +1,71 @@
+{
+  "id": "realestate",
+  "name": "Real Estate",
+  "purpose": "Property tours, apartment reviews.",
+  "formats": [
+    "16:9",
+    "9:16"
+  ],
+  "fonts": {
+    "display": "Montserrat 700",
+    "body": "Inter 500"
+  },
+  "palette": {
+    "bg": "#ffffff",
+    "accent": "#0f766e",
+    "text": "#111111"
+  },
+  "grade": "news",
+  "text": [
+    "room labels (LowerThird)",
+    "price + m² corner card (PriceTag)",
+    "feature callouts"
+  ],
+  "timing": {
+    "entrance_f": [
+      10,
+      14
+    ],
+    "exit_f": 10,
+    "shot_f": [
+      75,
+      150
+    ]
+  },
+  "effects": [
+    "LowerThird",
+    "PriceTag",
+    "Callout",
+    "Camera(push 0.05, drift)",
+    "Parallax",
+    "ProgressBar"
+  ],
+  "exits": [
+    "none",
+    "whipL"
+  ],
+  "audio": {
+    "voice": "en-US-AndrewMultilingualNeural",
+    "rate": "+0%",
+    "musicStyle": "corporate",
+    "bpm": 100,
+    "sections": [
+      "intro",
+      "ui"
+    ],
+    "cut": "soft whoosh",
+    "beat": "duck under voice-over"
+  },
+  "example": "/ae-motion:realestate — подписи комнат и цена в углу кадра",
+  "trigger": "/ae-motion:realestate",
+  "sizes": {
+    "16:9": [
+      1920,
+      1080
+    ],
+    "9:16": [
+      1080,
+      1920
+    ]
+  }
+}

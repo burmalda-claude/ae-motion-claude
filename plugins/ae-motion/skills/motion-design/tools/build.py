@@ -12,7 +12,7 @@ Outputs:
 script.json:
 {
   "fps": 30, "voice": "en-US-BrianMultilingualNeural", "rate": "+12%", "pitch": "+0Hz",
-  "bpm": 123, "key": "A", "musicGain": 0.5, "sfxGain": 0.8, "autoCut": true,
+  "bpm": 123, "key": "A", "musicStyle": "edm", "musicGain": 0.5, "sfxGain": 0.8, "autoCut": true,
   "beats": [
     {"id": "hook", "text": "Не может быть.", "lead": 18, "tail": 4, "min": 0, "music": "intro",
      "sfx": [["riser_short", "w0"], ["impact", "w0"], ["slash", "w1+2"]]},
@@ -22,6 +22,7 @@ script.json:
 Cue positions (frames, relative to the shot): 12 | "w3" (word 3 starts) | "w3+2" | "e2" (word 2 ends) | "end-6".
 SFX that swell into a moment (riser, riser_short, swish_in, reverse_swell) END on their cue.
 Music modes per beat (persist until changed): intro | drop | build | break | ui | stop.
+musicStyle: edm | phonk | lofi | ambient | cinematic | corporate | jcore. Top-level "music": false = no bed (ASMR, your own track).
 A beat without "text" is a silent visual beat (needs "min").
 Voices: en-US-BrianMultilingualNeural (default, most expressive, speaks Russian well), en-US-AndrewMultilingualNeural,
 ru-RU-DmitryNeural, ru-RU-SvetlanaNeural, en-US-AvaMultilingualNeural (female). Edge TTS needs internet.
@@ -191,7 +192,7 @@ def main():
             S.place(fx, sfx("whoosh_fast"), base - 0.08, 0.22)
 
     # 4) music with sections from beats
-    if a.no_music:
+    if a.no_music or cfg.get("music") is False:
         mus = np.zeros((n, 2))
     else:
         sections, cur = [], None
@@ -202,7 +203,7 @@ def main():
                 cur = m
         if not sections or sections[0][0] > 0:
             sections.insert(0, (0.0, "intro"))
-        mus = S.music(sections, total_s, cfg.get("bpm", 123), cfg.get("key", "A"))[:n]
+        mus = S.music(sections, total_s, cfg.get("bpm", 123), cfg.get("key", "A"), cfg.get("musicStyle", "edm"))[:n]
         mus = S.norm(mus, 0.8)
         # duck under voice (sidechain from voice envelope)
         venv = np.abs(vbus).max(axis=1)

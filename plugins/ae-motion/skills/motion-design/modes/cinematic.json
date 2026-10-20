@@ -1,0 +1,82 @@
+{
+  "id": "cinematic",
+  "name": "Cinematic / Trailer",
+  "purpose": "Trailers, teasers, cinematic intros in three acts (setup → build → payoff).",
+  "formats": [
+    "16:9",
+    "2.39:1"
+  ],
+  "fonts": {
+    "display": "Playfair Display 700 / Cormorant Garamond",
+    "condensed": "Oswald 300/700",
+    "body": "Inter 400"
+  },
+  "palette": {
+    "bg": "#050505",
+    "accent": "#d4a373",
+    "text": "#f2ead8"
+  },
+  "grade": "cinematic",
+  "text": [
+    "ChapterCard per act",
+    "slow MaskReveal titles, letter-spacing 0.3em → 0.02em",
+    "QuoteCard",
+    "credits with 12–18 f delay between lines"
+  ],
+  "timing": {
+    "entrance_f": [
+      18,
+      40
+    ],
+    "exit_f": 12,
+    "shot_f": [
+      45,
+      150
+    ]
+  },
+  "effects": [
+    "Letterbox",
+    "Grade(cinematic)",
+    "Grain(0.1)",
+    "Vignette",
+    "AnamorphicFlare",
+    "LightStreak",
+    "Camera(push 0.08, slow)",
+    "Bokeh(depth)",
+    "ChapterCard",
+    "QuoteCard",
+    "MaskReveal",
+    "Flash(final hit)"
+  ],
+  "exits": [
+    "none",
+    "zoomOut"
+  ],
+  "audio": {
+    "voice": "en-US-AndrewMultilingualNeural",
+    "rate": "-6%",
+    "musicStyle": "cinematic",
+    "bpm": 90,
+    "sections": [
+      "intro",
+      "build",
+      "build",
+      "stop",
+      "drop"
+    ],
+    "cut": "no auto-thump; boom on act changes",
+    "beat": "riser into payoff, impact + silence on the final frame"
+  },
+  "example": "/ae-motion:cinematic — 30-сек тизер с тремя актами (setup → build → payoff)",
+  "trigger": "/ae-motion:cinematic",
+  "sizes": {
+    "16:9": [
+      1920,
+      1080
+    ],
+    "2.39:1": [
+      1920,
+      804
+    ]
+  }
+}

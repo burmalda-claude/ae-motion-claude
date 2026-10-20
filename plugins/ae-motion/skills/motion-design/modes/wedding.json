@@ -1,0 +1,75 @@
+{
+  "id": "wedding",
+  "name": "Wedding / Event",
+  "purpose": "Weddings, anniversaries, events.",
+  "formats": [
+    "16:9",
+    "9:16",
+    "1:1"
+  ],
+  "fonts": {
+    "display": "Fraunces 300 italic / Playfair Display",
+    "body": "Inter 300"
+  },
+  "palette": {
+    "bg": "#1a1410",
+    "accent": "#e8c9a0",
+    "text": "#fff8ee"
+  },
+  "grade": "dream",
+  "text": [
+    "names reveal (MaskReveal, letter-spacing)",
+    "date card",
+    "thin sans details"
+  ],
+  "timing": {
+    "entrance_f": [
+      20,
+      40
+    ],
+    "exit_f": 20,
+    "shot_f": [
+      90,
+      180
+    ]
+  },
+  "effects": [
+    "MaskReveal",
+    "QuoteCard",
+    "LightLeak",
+    "Bokeh",
+    "Grade(dream)",
+    "Grain(0.04)",
+    "slow motion"
+  ],
+  "exits": [
+    "none"
+  ],
+  "audio": {
+    "voice": "en-US-AvaMultilingualNeural",
+    "rate": "-6%",
+    "musicStyle": "ambient",
+    "bpm": 72,
+    "sections": [
+      "intro"
+    ],
+    "cut": "none",
+    "beat": "duck under speech"
+  },
+  "example": "/ae-motion:wedding — имя пары, дата и мягкий переход между сценами",
+  "trigger": "/ae-motion:wedding",
+  "sizes": {
+    "16:9": [
+      1920,
+      1080
+    ],
+    "9:16": [
+      1080,
+      1920
+    ],
+    "1:1": [
+      1080,
+      1080
+    ]
+  }
+}

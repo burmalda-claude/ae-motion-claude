@@ -1,0 +1,87 @@
+{
+  "id": "ad",
+  "name": "Product / Ad",
+  "purpose": "Ads, promos, product videos.",
+  "formats": [
+    "16:9",
+    "9:16",
+    "1:1",
+    "4:5"
+  ],
+  "fonts": {
+    "display": "Poppins 800",
+    "body": "Montserrat 600 / Inter 700"
+  },
+  "palette": {
+    "bg": "#f5f5f7",
+    "accent": "#111111",
+    "text": "#111111",
+    "accent2": "#2f6bff"
+  },
+  "grade": "news",
+  "text": [
+    "3 feature callouts",
+    "PriceTag",
+    "CTAButton in the last 2 s",
+    "clean kinetic typography (Words, MaskReveal)"
+  ],
+  "timing": {
+    "entrance_f": [
+      6,
+      10
+    ],
+    "exit_f": 6,
+    "shot_f": [
+      30,
+      75
+    ]
+  },
+  "effects": [
+    "Callout",
+    "PriceTag",
+    "CTAButton",
+    "BeforeAfter",
+    "LightStreak(logo)",
+    "MaskReveal",
+    "Words",
+    "Tilt3D",
+    "Camera(push 0.04)"
+  ],
+  "exits": [
+    "whipL",
+    "zoomOut",
+    "none"
+  ],
+  "audio": {
+    "voice": "en-US-AvaMultilingualNeural",
+    "rate": "+4%",
+    "musicStyle": "corporate",
+    "bpm": 118,
+    "sections": [
+      "intro",
+      "drop"
+    ],
+    "cut": "soft whoosh",
+    "beat": "hit + cash on CTA"
+  },
+  "example": "/ae-motion:ad — 15-сек продуктовый ролик с 3 фичами и CTA",
+  "trigger": "/ae-motion:ad",
+  "sizes": {
+    "16:9": [
+      1920,
+      1080
+    ],
+    "9:16": [
+      1080,
+      1920
+    ],
+    "1:1": [
+      1080,
+      1080
+    ],
+    "4:5": [
+      1080,
+      1350
+    ]
+  }
+}

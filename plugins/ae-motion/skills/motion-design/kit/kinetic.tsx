@@ -883,3 +883,27 @@ export const eta = (frame: number, startSec: number, perFrame: number) => {
   const p = (n: number) => String(n).padStart(2, "0");
   return `${p(Math.floor(s / 3600))}:${p(Math.floor((s % 3600) / 60))}:${p(s % 60)}`;
 };
+
+/** Fast slide-in (default 5 f) with velocity-matched motion blur + RGB split — the default word entrance of kinetic edits. */
+export const Slide: React.FC<{ at: number; from?: number; vertical?: boolean; dur?: number; children: React.ReactNode; style?: React.CSSProperties }> = ({
+  at,
+  from = 900,
+  vertical,
+  dur = 5,
+  children,
+  style,
+}) => {
+  const frame = useCurrentFrame();
+  const p = prog(frame, at, dur, EASE.out);
+  const v = (p - prog(frame - 1, at, dur, EASE.out)) * Math.abs(from);
+  const x = from * (1 - p);
+  return (
+    <div style={{ opacity: frame >= at ? 1 : 0, transform: vertical ? `translateY(${x}px)` : `translateX(${x}px)`, ...style }}>
+      <Smear x={vertical ? 0 : v * 0.5} y={vertical ? v * 0.5 : 0}>
+        <Chroma amount={Math.min(30, v * 0.2)} angle={vertical ? 90 : 0}>
+          {children}
+        </Chroma>
+      </Smear>
+    </div>
+  );
+};

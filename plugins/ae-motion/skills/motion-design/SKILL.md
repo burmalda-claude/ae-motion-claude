@@ -21,6 +21,10 @@ You are the motion designer, editor **and** sound designer. The user gives one l
 6. **Check** — render stills of 4–6 key frames (`npx remotion still <Id> --frame=<n> out/c<n>.png`) and Read them. Fix overflow, empty frames, wrong fonts, words appearing before they are spoken.
 7. **Render** — `npx remotion render <Id> out/video.mp4 --concurrency=50%`. Tell the user where the file is.
 
+## Modes (slash commands)
+
+`commands/*.md` → `/ae-motion:<mode>` (edit, cinematic, lyric, clip, tutorial, gym, gaming, ad, amv, travel, meme, news, fashion, horror, wedding, realestate, asmr, reaction). Each loads `modes/<mode>.json` — format sizes, palette, fonts, grade, text presets, timing, `effects` (the modifier stack: kit component names), `exits`, `audio` (voice/rate/musicStyle/bpm/sections, cut + beat behavior). A project file `.ae-motion/modes/<mode>.json` overrides the built-in one. Media-driven modes (lyric, clip, reaction, gaming) use `tools/transcribe.py` on the user's file instead of TTS. Mode building blocks live in `kit/modes.tsx` (Grade, LightLeak, VHS, Flicker, AnamorphicFlare, ImpactFrame, ChapterCard, QuoteCard, KaraokeLine, MemeCaption, Wasted, JPText, LowerThird, ProgressBar, Ticker, BreakingBanner, StepBadge, HighlightBox, Callout, ZoomTo, StatCard, TimerDisplay, Hitmarker, KillFeed, ComboCounter, PriceTag, CTAButton, BeforeAfter, MapPin, DayCounter, PiP, CommentBubble, MangaPanels, EmojiPop). `examples/Modes.tsx` flies through all modes.
+
 ## Sync rules (what makes it feel edited, not generated)
 
 - **Every on-screen word lands on its spoken frame**: `delay={w(i)}`. Never hard-code word delays when there is a voice line.

@@ -1,0 +1,74 @@
+{
+  "id": "fashion",
+  "name": "Fashion / Lookbook",
+  "purpose": "Fashion edits, lookbooks, runway.",
+  "formats": [
+    "9:16",
+    "4:5",
+    "16:9"
+  ],
+  "fonts": {
+    "display": "Bebas Neue / Syne 800 (Clash Display is not on Google Fonts)",
+    "accent": "Cormorant Garamond italic"
+  },
+  "palette": {
+    "bg": "#f2f0eb",
+    "accent": "#111111",
+    "text": "#111111"
+  },
+  "grade": "fashion",
+  "text": [
+    "editorial typography: huge collection name + tiny caps labels",
+    "minimal credits"
+  ],
+  "timing": {
+    "entrance_f": [
+      12,
+      24
+    ],
+    "exit_f": 8,
+    "shot_f": [
+      45,
+      90
+    ]
+  },
+  "effects": [
+    "MaskReveal",
+    "Outline",
+    "Grade(fashion)",
+    "Grain",
+    "Letterbox",
+    "slow motion (playbackRate 0.5)",
+    "runway cut on step"
+  ],
+  "exits": [
+    "whipR",
+    "none"
+  ],
+  "audio": {
+    "musicStyle": "ambient",
+    "bpm": 124,
+    "sections": [
+      "intro",
+      "drop"
+    ],
+    "cut": "cut on every beat (model's step)",
+    "beat": "techno pulse"
+  },
+  "example": "/ae-motion:fashion — лукбук с collection name и плавными переходами",
+  "trigger": "/ae-motion:fashion",
+  "sizes": {
+    "9:16": [
+      1080,
+      1920
+    ],
+    "4:5": [
+      1080,
+      1350
+    ],
+    "16:9": [
+      1920,
+      1080
+    ]
+  }
+}

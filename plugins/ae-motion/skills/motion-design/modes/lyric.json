@@ -1,0 +1,66 @@
+{
+  "id": "lyric",
+  "name": "Lyric Video",
+  "purpose": "Lyric videos, karaoke, text to music (your track).",
+  "formats": [
+    "16:9",
+    "9:16",
+    "1:1"
+  ],
+  "fonts": {
+    "display": "Bebas Neue / Oswald 700",
+    "body": "Inter 800"
+  },
+  "palette": {
+    "bg": "#0b0b14",
+    "accent": "#ff3df2",
+    "text": "#ffffff"
+  },
+  "grade": "punch",
+  "text": [
+    "KaraokeLine per lyric line (fill per word)",
+    "line breaks follow pauses / bars (transcribe.py --max-words)",
+    "big centered, stroke/shadow for any background"
+  ],
+  "timing": {
+    "entrance_f": [
+      3,
+      6
+    ],
+    "exit_f": 4,
+    "shot_f": "one shot per lyric line"
+  },
+  "effects": [
+    "KaraokeLine",
+    "Letters(pop)",
+    "punch() on beats",
+    "EchoStack(trail)",
+    "Glow on hits",
+    "Chroma",
+    "Grain"
+  ],
+  "exits": [
+    "streakY",
+    "zoom"
+  ],
+  "audio": {
+    "source": "your track via tools/transcribe.py (no TTS, no generated music)",
+    "beat": "hold long notes (word fe), bounce on word start, glow on kick"
+  },
+  "example": "/ae-motion:lyric song.mp3 — синхронный текст с подсветкой по словам",
+  "trigger": "/ae-motion:lyric",
+  "sizes": {
+    "16:9": [
+      1920,
+      1080
+    ],
+    "9:16": [
+      1080,
+      1920
+    ],
+    "1:1": [
+      1080,
+      1080
+    ]
+  }
+}
