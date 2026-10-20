@@ -63,6 +63,13 @@ All animation props are in **frames relative to the shot** (`delay`, `dur`, `hit
 | YouTube / presentation | 1920×1080 | 30 or 60 |
 | Square | 1080×1080 | 30 |
 
+## Gotchas
+
+- `AbsoluteFill` is `flex-direction: column` by default — pass `flexDirection: "row"` for side-by-side layouts.
+- Windows: if render fails with `spawn ...chrome-headless-shell.exe ENOENT` while the file exists, the project path is longer than 260 chars. Create a junction with a short path (`New-Item -ItemType Junction -Path $env:TEMP\vid -Target <project>`) and run Remotion from there.
+- Mixing presentations in one array needs `TransitionPresentation<any>` typing (see `examples/Showcase.tsx`).
+- `examples/Showcase.tsx` renders every kit component once with captions — the quickest way to see what the kit can do (`npx remotion studio`).
+
 ## Limits (be honest with the user)
 
 Remotion renders HTML/CSS/SVG/WebGL. Real 3D scenes need `@remotion/three` (three.js); particles here are 2D; there is no optical-flow time remap or AI rotoscoping. For effects beyond the kit, prefer Lottie exports from AE (`@remotion/lottie`) or footage in `public/`.

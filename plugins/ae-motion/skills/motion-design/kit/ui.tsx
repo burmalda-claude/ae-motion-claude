@@ -1,6 +1,6 @@
 import React from "react";
 import { interpolate, useCurrentFrame, useVideoConfig } from "remotion";
-import { evolvePath } from "@remotion/paths";
+import { evolvePath, getLength, getPointAtLength } from "@remotion/paths";
 import { EASE, clamp, mix, pop, prog } from "./easing";
 import { Typewriter } from "./text";
 
@@ -177,7 +177,8 @@ export const NodeGraph: React.FC<{
 }> = ({ nodes, edges, delay = 0, width = 1600, height = 700, accent = "#ff2a3d" }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const byId = Object.fromEntries(nodes.map((n) => [n.id, n]));
+  const byId: Record<string, (typeof nodes)[number]> = {};
+  nodes.forEach((n) => (byId[n.id] = n));
   return (
     <div style={{ position: "relative", width, height }}>
       <svg width={width} height={height} style={{ position: "absolute", inset: 0, overflow: "visible" }}>
@@ -192,7 +193,7 @@ export const NodeGraph: React.FC<{
           return (
             <g key={i}>
               <path d={d} stroke={accent} strokeWidth={4} fill="none" strokeDasharray={strokeDasharray} strokeDashoffset={strokeDashoffset} style={{ filter: `drop-shadow(0 0 8px ${accent})` }} />
-              {p >= 1 && <circle r={8} fill="#fff" cx={mix(A.x, B.x, t)} cy={mix(A.y, B.y, EASE.inOut(t))} style={{ filter: `drop-shadow(0 0 10px ${accent})` }} />}
+              {p >= 1 && <Pulse d={d} t={t} accent={accent} />}
             </g>
           );
         })}
@@ -222,6 +223,12 @@ export const NodeGraph: React.FC<{
       })}
     </div>
   );
+};
+
+const Pulse: React.FC<{ d: string; t: number; accent: string }> = ({ d, t, accent }) => {
+  const pt = getPointAtLength(d, getLength(d) * t);
+  if (!pt) return null;
+  return <circle r={8} fill="#fff" cx={pt.x} cy={pt.y} style={{ filter: `drop-shadow(0 0 10px ${accent})` }} />;
 };
 
 /** Mouse cursor that travels through points (`at` must increase, 2+ points) and clicks at the ones marked. */
