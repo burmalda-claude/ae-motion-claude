@@ -1,4 +1,4 @@
-# Breakdown of a top kinetic tech trailer (every 10th frame studied)
+# Breakdown of a top kinetic tech trailer (all 2190 animation frames studied + audio analysis)
 
 ~72 s of animation at 30 fps, red / black / paper palette, voiced by the creator; on-screen text = the narration. Use this as a pattern library: each row is a reusable beat. Kit names in `code`.
 
@@ -47,3 +47,22 @@
 5. **Texture on dark** — dot grid + red floor glow + bokeh.
 6. **UI mocks as proof** — timeline, prompt box, chat card, node graph, player, render bar.
 7. **Narration = text** — the voice reads exactly what is on screen, word-synced.
+
+## Measured numbers (frame-by-frame + audio analysis)
+
+**Motion**
+- Word entrance: **2–5 frames** from invisible to settled, with motion blur ≈ speed and RGB split on the fastest frames. Never 12+ frames.
+- Shot exit: **3–6 frames** — zoom-through (scale 1→4 + blur + chroma), vertical column streak, horizontal slice-glitch, whip with smear, drop. A clean hard cut is rare.
+- Median distance between hard cuts: **8 frames** in the busiest sections; whole shots last 15–90 frames.
+- Typing: mono/condensed text types ~1 char/frame with 1–2 random glyph frames per character before it resolves.
+- The "usual way" section is fully desaturated (comp grid, rulers, gray UI) — color returns on the reveal.
+- A mini player at the end cycles frozen frames of earlier shots every ~7 frames (recap).
+
+**Audio**
+- Voice: median **−15.5 dBFS** while speaking, energetic, ~3 words/s.
+- Music in the gaps: **7.5 dB under the voice**; 123 BPM electronic bed with a sidechain pump.
+- A **sub thump (40–60 Hz) + short whoosh on almost every cut** (73 sub hits in 72 s).
+- Noise risers / reverse swells lead into reveals; hard silences ("stop") right before big hits.
+- Spectrum: strong sub and low-mids, air (6 k+) ≈ 20 dB under the total.
+
+`tools/build.py` implements these targets; `tools/sound.py` holds the synths.

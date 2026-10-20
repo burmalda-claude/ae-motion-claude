@@ -4,6 +4,7 @@ import { noise2D } from "@remotion/noise";
 import { fitText } from "@remotion/layout-utils";
 import { EASE, clamp, mix, pop, prog } from "./easing";
 import { Smear } from "./fx";
+import { Chroma } from "./kinetic";
 
 type Base = { delay?: number; style?: React.CSSProperties };
 type Dir = "left" | "right" | "up" | "down";
@@ -28,7 +29,7 @@ export const WhipIn: React.FC<Base & { children: React.ReactNode; from?: Dir; di
   delay = 0,
   from = "right",
   distance = 1400,
-  dur = 12,
+  dur = 6,
   style,
 }) => {
   const frame = useCurrentFrame();
@@ -37,7 +38,9 @@ export const WhipIn: React.FC<Base & { children: React.ReactNode; from?: Dir; di
   const v = (p - prog(frame - 1, delay, dur, EASE.out)) * distance; // px per frame
   return (
     <Smear x={dx ? v * 0.6 : 0} y={dy ? v * 0.6 : 0} style={{ display: "inline-block", ...style }}>
-      <div style={{ transform: `translate(${dx * distance * (1 - p)}px, ${dy * distance * (1 - p)}px)`, opacity: p > 0 ? 1 : 0 }}>{children}</div>
+      <div style={{ transform: `translate(${dx * distance * (1 - p)}px, ${dy * distance * (1 - p)}px)`, opacity: p > 0 ? 1 : 0 }}>
+        <Chroma amount={Math.min(36, Math.abs(v) * 0.12)} angle={dy ? 90 : 0}>{children}</Chroma>
+      </div>
     </Smear>
   );
 };
@@ -105,7 +108,7 @@ export const Words: React.FC<Base & { text: string; stagger?: number; accent?: s
 };
 
 /** Text rises from behind an invisible line (mask reveal). */
-export const MaskReveal: React.FC<Base & { children: React.ReactNode; from?: Dir; dur?: number }> = ({ children, delay = 0, from = "down", dur = 14, style }) => {
+export const MaskReveal: React.FC<Base & { children: React.ReactNode; from?: Dir; dur?: number }> = ({ children, delay = 0, from = "down", dur = 8, style }) => {
   const frame = useCurrentFrame();
   const [dx, dy] = vec(from);
   const p = prog(frame, delay, dur);

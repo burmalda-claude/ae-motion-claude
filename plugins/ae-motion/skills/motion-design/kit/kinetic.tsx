@@ -10,7 +10,7 @@ export const ZoomIn: React.FC<{ children: React.ReactNode; delay?: number; from?
   children,
   delay = 0,
   from = 3.2,
-  dur = 10,
+  dur = 6,
   echoes = 6,
   style,
 }) => {
@@ -31,7 +31,9 @@ export const ZoomIn: React.FC<{ children: React.ReactNode; delay?: number; from?
             {children}
           </div>
         ))}
-      <div style={{ transform: `scale(${s})`, opacity: Math.min(1, p * 4), filter: `blur(${v * 40}px)` }}>{children}</div>
+      <div style={{ transform: `scale(${s})`, opacity: Math.min(1, p * 4), filter: `blur(${v * 40}px)` }}>
+        <Chroma amount={Math.min(40, v * 160)}>{children}</Chroma>
+      </div>
     </div>
   );
 };
@@ -697,4 +699,187 @@ export const LightSweep: React.FC<{ at?: number; dur?: number; color?: string }>
       />
     </AbsoluteFill>
   );
+};
+
+// ---------------------------------------------------------------------------------------------
+// Fast-cut toolkit (frame-by-frame study: entrances 2–5 f, exits 3–6 f, heavy blur + chroma).
+
+/** Chromatic aberration: red/cyan copies offset by `amount` px along `angle` (deg). Use on fast moves. */
+export const Chroma: React.FC<{ amount: number; angle?: number; children: React.ReactNode; style?: React.CSSProperties }> = ({ amount, angle = 0, children, style }) => {
+  if (Math.abs(amount) < 0.5) return <div style={style}>{children}</div>;
+  const dx = Math.cos((angle * Math.PI) / 180) * amount;
+  const dy = Math.sin((angle * Math.PI) / 180) * amount;
+  return (
+    <div style={{ position: "relative", ...style }}>
+      <div style={{ position: "absolute", inset: 0, transform: `translate(${dx}px,${dy}px)`, filter: "url(#chroma-r)", opacity: 0.85, mixBlendMode: "screen" }}>{children}</div>
+      <div style={{ position: "absolute", inset: 0, transform: `translate(${-dx}px,${-dy}px)`, filter: "url(#chroma-c)", opacity: 0.85, mixBlendMode: "screen" }}>{children}</div>
+      <div style={{ position: "relative" }}>{children}</div>
+    </div>
+  );
+};
+/** Mount once per composition: SVG filters used by <Chroma>. */
+export const ChromaDefs: React.FC = () => (
+  <svg width={0} height={0} style={{ position: "absolute" }}>
+    <filter id="chroma-r">
+      <feColorMatrix type="matrix" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" />
+    </filter>
+    <filter id="chroma-c">
+      <feColorMatrix type="matrix" values="0 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 1 0" />
+    </filter>
+  </svg>
+);
+
+export type ExitKind = "zoom" | "zoomOut" | "streakY" | "streakX" | "slice" | "spin" | "whipL" | "whipR" | "drop" | "none";
+/** Shot exit over the last `frames` frames of a shot of length `dur` (and optional entrance over the first `inFrames`). */
+export const Exit: React.FC<{ dur: number; kind?: ExitKind; frames?: number; enter?: ExitKind; inFrames?: number; children: React.ReactNode }> = ({
+  dur,
+  kind = "none",
+  frames = 4,
+  enter = "none",
+  inFrames = 3,
+  children,
+}) => {
+  const frame = useCurrentFrame();
+  const out = kind === "none" ? 0 : prog(frame, dur - frames, frames, EASE.in);
+  const inn = enter === "none" ? 1 : prog(frame, 0, inFrames, EASE.out);
+  const k = out > 0 ? out : 1 - inn;
+  const mode = out > 0 ? kind : enter;
+  const sign = out > 0 ? 1 : -1;
+  if (k <= 0.001 || mode === "none") return <AbsoluteFill>{children}</AbsoluteFill>;
+  let tr = "";
+  let blurX = 0;
+  let blurY = 0;
+  let op = 1;
+  let chroma = 0;
+  let clip: string | undefined;
+  switch (mode) {
+    case "zoom":
+      tr = `scale(${sign > 0 ? 1 + k * 3.5 : 1 - k * 0.6})`;
+      blurX = blurY = k * 18;
+      chroma = k * 22;
+      op = sign > 0 ? 1 - k * 0.6 : 1 - k;
+      break;
+    case "zoomOut":
+      tr = `scale(${1 - k * 0.7})`;
+      blurX = blurY = k * 10;
+      op = 1 - k;
+      break;
+    case "streakY":
+      tr = `scaleY(${1 + k * 6})`;
+      blurY = k * 60;
+      op = 1 - k * 0.5;
+      break;
+    case "streakX":
+      tr = `scaleX(${1 + k * 5})`;
+      blurX = k * 70;
+      op = 1 - k * 0.5;
+      break;
+    case "whipL":
+    case "whipR": {
+      const d = (mode === "whipL" ? -1 : 1) * sign;
+      tr = `translateX(${d * k * 110}%)`;
+      blurX = k * 80;
+      chroma = k * 30;
+      break;
+    }
+    case "spin":
+      tr = `scale(${1 + k * 1.5}) rotate(${sign * k * 25}deg)`;
+      blurX = blurY = k * 14;
+      op = 1 - k * 0.7;
+      break;
+    case "drop":
+      tr = `translateY(${sign * k * 120}%)`;
+      blurY = k * 50;
+      break;
+    case "slice":
+      clip = undefined;
+      break;
+  }
+  if (mode === "slice") {
+    const n = 7;
+    return (
+      <AbsoluteFill>
+        {Array.from({ length: n }, (_, i) => (
+          <AbsoluteFill
+            key={i}
+            style={{
+              clipPath: `inset(${(i / n) * 100}% 0 ${100 - ((i + 1) / n) * 100}% 0)`,
+              transform: `translateX(${(random(`sl${i}`) - 0.5) * 2 * k * 900}px)`,
+              filter: `blur(${k * 8}px)`,
+              opacity: 1 - k * 0.3,
+            }}
+          >
+            {children}
+          </AbsoluteFill>
+        ))}
+      </AbsoluteFill>
+    );
+  }
+  return (
+    <AbsoluteFill style={{ transform: tr, opacity: op, clipPath: clip }}>
+      <Smear x={blurX} y={blurY} style={{ width: "100%", height: "100%" }}>
+        <Chroma amount={chroma} style={{ width: "100%", height: "100%" }}>
+          <AbsoluteFill>{children}</AbsoluteFill>
+        </Chroma>
+      </Smear>
+    </AbsoluteFill>
+  );
+};
+
+const GLYPHS = "█▓▒░#/\<>_-=+*01";
+/** Type-on with glitch: each char shows 1–2 random glyph frames before resolving. `perChar` frames per char. */
+export const TypeOn: React.FC<{ text: string; delay?: number; perChar?: number; style?: React.CSSProperties; cursor?: boolean }> = ({
+  text,
+  delay = 0,
+  perChar = 1.3,
+  style,
+  cursor = false,
+}) => {
+  const frame = useCurrentFrame();
+  const chars = [...text];
+  const t = frame - delay;
+  return (
+    <span style={{ whiteSpace: "pre", ...style }}>
+      {chars.map((c, i) => {
+        const at = i * perChar;
+        if (t < at) return <span key={i} style={{ opacity: 0 }}>{c}</span>;
+        const glitching = t < at + 2 && c !== " ";
+        return (
+          <span key={i} style={glitching ? { opacity: 0.8, filter: "blur(1px)" } : undefined}>
+            {glitching ? GLYPHS[Math.floor(random(`g${i}-${frame}`) * GLYPHS.length)] : c}
+          </span>
+        );
+      })}
+      {cursor && <span style={{ opacity: Math.floor(frame / 8) % 2 ? 1 : 0 }}>|</span>}
+    </span>
+  );
+};
+
+/** Wireframe extrusion: outline text with N stacked outline copies receding (3D wire look). */
+export const WireExtrude: React.FC<{ children: React.ReactNode; depth?: number; dx?: number; dy?: number; color?: string; width?: number; style?: React.CSSProperties }> = ({
+  children,
+  depth = 10,
+  dx = 2.2,
+  dy = -2.2,
+  color = "#fff",
+  width = 2,
+  style,
+}) => (
+  <span style={{ position: "relative", display: "inline-block", ...style }}>
+    {Array.from({ length: depth }, (_, i) => (
+      <span
+        key={i}
+        style={{ position: i === 0 ? "relative" : "absolute", left: 0, top: 0, color: "transparent", WebkitTextStroke: `${width}px ${color}`, transform: `translate(${(depth - 1 - i) * dx}px, ${(depth - 1 - i) * dy}px)`, opacity: i === depth - 1 ? 1 : 0.35 }}
+      >
+        {children}
+      </span>
+    ))}
+  </span>
+);
+
+/** Rolls a value upward over time (ETA counters going UP, like a never-ending render). */
+export const eta = (frame: number, startSec: number, perFrame: number) => {
+  const s = Math.floor(startSec + frame * perFrame);
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${p(Math.floor(s / 3600))}:${p(Math.floor((s % 3600) / 60))}:${p(s % 60)}`;
 };

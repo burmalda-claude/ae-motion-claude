@@ -11,10 +11,10 @@ One skill, `motion-design`, which Claude loads on its own when you ask for a vid
 | Part | What it does |
 |---|---|
 | **Director mode** (`references/director.md`) | Turns a short prompt into a full brief without a questionnaire: format, length, theme by topic, language, script as short beats, then builds |
-| **Built-in voice-over** (`tools/voice.py`) | Neural TTS (free Microsoft Edge voices, 100+ languages) with **per-word timings**, loudness-normalized. Every on-screen word animates on the frame it is spoken |
-| **Sound design** (`tools/sfx.py`) | 18 synthesized SFX (whoosh, hit, boom, riser, slash, glitch, pop, key, shimmer, shutter…) and a generated music bed at any BPM. No samples, no licenses |
+| **Voice + sound engine** (`tools/build.py`, `tools/sound.py`) | One command turns `script.json` into: neural voice-over per line (Edge TTS, default Brian Multilingual — expressive, clean Russian) with **per-word frame timings**, a broadcast voice chain, synthesized SFX on word cues, an arranged 123-BPM music bed with sections, sidechain pumping and ducking, mastered to −14 LUFS. Mix targets measured from a top reference |
+| **23 synthesized SFX** | impact, hit, sub thump, boom, whoosh, swish-in, zoom, riser, reverse swell, light-saber slash, glitch, type-on, click, key, pop, shimmer, ding, tick, shutter, stutter, tape stop… No samples, no licenses |
 | **Component kit** (`kit/`) | 70+ Remotion components: kinetic text, zoom-blur, warp streaks, speed lines, light slashes, camera, transitions, AE-style UI mocks, voice timeline |
-| **Reference trailer** (`examples/Trailer.tsx`) | A voiced 72-second, 36-beat kinetic trailer in Russian, rebuilt from a frame-by-frame study of a top tech promo — the quality bar |
+| **Reference trailer** (`examples/Trailer.tsx`) | A voiced 86-second, 45-shot kinetic trailer in Russian, rebuilt shot-for-shot after studying every frame and the audio of a top tech promo — the quality bar |
 | **Reference breakdown** (`references/reference-breakdown.md`) | That study as a pattern library: what every beat does and which component makes it |
 | **Editing grammar / themes / fonts / effects** | Rhythm, cut types, shot vocabulary; 14 themes; ~23 font pairings; raw AE → Remotion recipes |
 
@@ -117,7 +117,7 @@ claude plugin install ae-motion@ae-motion-local
 
 Or from a local folder: `claude plugin marketplace add ./ae-motion-claude`.
 
-You need Node.js and Python 3 (`pip install edge-tts numpy`). Claude sets up the Remotion project and installs packages itself. Voice-over needs internet (Edge TTS); without it a robotic offline Windows voice is used.
+You need Node.js and Python 3 (`pip install edge-tts numpy scipy librosa imageio-ffmpeg`). Claude sets up the Remotion project and installs packages itself. Voice-over needs internet (Edge TTS); without it a robotic offline Windows voice is used.
 
 ## Example
 
@@ -135,7 +135,7 @@ ae-motion-claude/
     └── skills/motion-design/
         ├── SKILL.md
         ├── kit/            ← easing, text, fx, kinetic, camera, transitions, ui, audio (+ index.ts)
-        ├── tools/          ← voice.py (TTS + word timings), sfx.py (SFX + music)
+        ├── tools/          ← build.py (script → voice, timing, SFX, music, master), sound.py (synths, DSP)
         ├── examples/       ← Trailer.tsx + trailer-script.json, KineticPromo.tsx, Showcase.tsx
         └── references/{director,editing,reference-breakdown,themes,fonts,effects}.md
 ```

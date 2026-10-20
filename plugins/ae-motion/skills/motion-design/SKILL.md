@@ -15,11 +15,9 @@ You are the motion designer, editor **and** sound designer. The user gives one l
    - Copy `kit/` from this skill into `src/kit/`; copy `tools/` anywhere (they are Python scripts).
    - `npx remotion add @remotion/google-fonts @remotion/transitions @remotion/noise @remotion/paths @remotion/layout-utils`
    - tsconfig: `"resolveJsonModule": true` (voice timings are imported as JSON).
-3. **Voice** (default ON unless the user says no voice) — write `script.json` = `[{"id","text"}]`, one entry per beat, then:
-   `pip install edge-tts` once, `python tools/voice.py script.json . --voice ru-RU-DmitryNeural --rate +12%`
-   → `public/vo/<id>.mp3` + `src/voice.json` with **per-word start/end times**. Pick the voice by the user's language (see voice.py docstring). Text that TTS would mispronounce (English brand names in a Russian script) — write phonetically in `text` and keep the real spelling on screen.
-4. **Sound** — `python tools/sfx.py sfx .` (18 synthesized SFX in `public/sfx/`), and after you know the length `python tools/sfx.py beat . --bpm 128 --seconds <len+2>` (music bed). User-supplied music in `public/` always wins over the generated beat.
-5. **Build** — one component per beat receiving `ShotProps` (`w(i)` = frame word *i* is spoken, `we(i)`, `dur`). Put beats in a `Beat[]` with `vo`, `sfx`, `min`, `tail`, `lead`; `layoutBeats()` makes every shot exactly as long as its line; `<VoiceTimeline placed music>` plays shots + voice + SFX + ducked music. **Reference implementation: `examples/Trailer.tsx` + `examples/trailer-script.json`** — read it first; it is the quality bar.
+3. **Script** — write `script.json` (format in `tools/build.py` docstring; full example `examples/trailer-script.json`): one beat per shot with `text` (what is spoken = what is on screen), `lead`/`tail`/`min` frames, `sfx` cues tied to words (`["impact", "w0"]`, `["riser", "end"]`), and a `music` mode where the energy changes (`intro | drop | build | break | ui | stop`). Text the TTS would mispronounce (English brand names in a Russian script) — write phonetically in `text`, keep the real spelling on screen.
+4. **Build audio + timing** — `pip install edge-tts numpy scipy librosa imageio-ffmpeg` once, then `python tools/build.py script.json .` → neural voice per line (default `en-US-BrianMultilingualNeural`: most expressive, speaks Russian cleanly), trimmed + broadcast voice chain, `src/timeline.json` with every word's frame, synthesized SFX on cues, an arranged 123-BPM bed with sidechain pumping and ducking under the voice, mastered to −14 LUFS / −1 dBTP → `public/audio/master.wav` (+ stems). Re-run after any script change; TTS is cached.
+5. **Build visuals** — one component per beat receiving `ShotProps` (`w(i)` = frame word *i* starts, `we(i)`, `dur`). Wrap each in `<Exit dur kind>` (3–5 f exits: `zoom`, `streakY`, `streakX`, `slice`, `whipL/R`, `spin`, `drop`), map ids → components, render `<TimelineShots timeline={timelineJson} shots={SHOTS} />` (it also plays the master). Mount `<ChromaDefs />` once. **Reference implementation: `examples/Trailer.tsx` + `examples/trailer-script.json`** — read it first; it is the quality bar.
 6. **Check** — render stills of 4–6 key frames (`npx remotion still <Id> --frame=<n> out/c<n>.png`) and Read them. Fix overflow, empty frames, wrong fonts, words appearing before they are spoken.
 7. **Render** — `npx remotion render <Id> out/video.mp4 --concurrency=50%`. Tell the user where the file is.
 
@@ -36,12 +34,12 @@ You are the motion designer, editor **and** sound designer. The user gives one l
 | File | Components |
 |---|---|
 | `easing.ts` | `EASE` (easy, out, in, inOut, back), `prog`, `pop`, `mix`, `envelope`, `beatFrames`, `clamp` |
-| `audio.tsx` | `layoutBeats`, `VoiceTimeline`, `Sfx`, `TypingSfx`, `Captions` (TikTok word captions), types `Beat`, `ShotProps`, `VoiceData` |
-| `kinetic.tsx` | `ZoomIn` (radial zoom-blur entrance), `WarpStreaks`, `SpeedLines`, `Slash` (light saber), `Pops`, `ScrollStack` (vertical camera through lines), `Wobble`, `WeightShift`, `Scatter`, `MorphShape`, `Filmstrip`, `GlowPill`, `CompGrid`, `TransformBox`, `LayerBars`, `KeyLanes`, `GraphCurve`, `EchoTower`, `DiagonalBand`, `TerminalLine`, `GradientText`, `Sparkle`, `Ruler`, `Bulb`, `RepeatStretch`, `ChatCard`, `LightSweep` |
+| `audio.tsx` | `TimelineShots` (shots + master audio from `timeline.json`), `shotProps`, `Captions` (TikTok word captions), `Sfx`, types `ShotProps`, `TimelineData` |
+| `kinetic.tsx` | `Exit` (3–5 f shot exits/entrances), `Chroma` + `ChromaDefs` (RGB split), `TypeOn` (glitch typing), `WireExtrude`, `eta()`, `ZoomIn` (radial zoom-blur entrance), `WarpStreaks`, `SpeedLines`, `Slash` (light saber), `Pops`, `ScrollStack` (vertical camera through lines), `Wobble`, `WeightShift`, `Scatter`, `MorphShape`, `Filmstrip`, `GlowPill`, `CompGrid`, `TransformBox`, `LayerBars`, `KeyLanes`, `GraphCurve`, `EchoTower`, `DiagonalBand`, `TerminalLine`, `GradientText`, `Sparkle`, `Ruler`, `Bulb`, `RepeatStretch`, `ChatCard`, `LightSweep` |
 | `text.tsx` | `Fit` (fill width exactly), `SlamText`, `WhipIn`, `Letters` (rise/pop/drop/blur), `Words`, `MaskReveal`, `Typewriter`, `Counter`, `Outline`, `Extrude` (3D), `EchoStack`, `Stretch`, `Glitch`, `Highlight`, `Underline`, `CheckerText`, `punch()` |
 | `fx.tsx` | `Smear` (directional blur), `Glow`, `Grain`, `Vignette`, `Scanlines`, `DotGrid`, `Orb`, `Bokeh`, `LightStreak`, `Sparks`, `Starburst`, `Shockwave`, `Cube3D`, `Viewfinder`, `HudRing`, `Letterbox`, `Flash` |
 | `camera.tsx` | `Camera` (push-in, drift, `hits` shakes, roll), `Parallax`, `Tilt3D` |
-| `transitions.tsx` | presentations `whip()`, `zoomThrough()`, `zoomBlur()`, `streak()`, `slices()` for `<TransitionSeries>` |
+| `transitions.tsx` | presentations `whip()`, `zoomThrough()`, `zoomBlur()`, `streak()`, `slices()` for `<TransitionSeries>` (for voiced edits prefer hard cuts + `Exit`) |
 | `ui.tsx` | `PromptBox`, `Timeline`, `RenderBar`, `NodeGraph`, `Cursor`, `PlayerMock` |
 
 All animation props are in **frames relative to the shot**. Components read `useCurrentFrame()`, so they restart inside each beat.
@@ -80,8 +78,9 @@ Examples: `Trailer.tsx` (voiced, 36 beats, the target style), `KineticPromo.tsx`
 
 - `AbsoluteFill` is `flex-direction: column` by default — pass `flexDirection: "row"` for side-by-side layouts.
 - Google font `subsets` must be typed: `["cyrillic", "latin"] as ("cyrillic" | "latin")[]`.
-- edge-tts occasionally returns "No audio was received" — voice.py retries 4×, then falls back to offline Windows SAPI (robotic, estimated timings). Tell the user if the fallback was used.
-- TTS files end with ~0.7 s silence; `layoutBeats` paces by the last spoken word (`spokenEnd`), so don't pad manually.
+- edge-tts occasionally returns "No audio was received" — build.py retries 5× and caches results; if it still fails, check internet and re-run.
+- build.py trims TTS silence to the spoken words, so pace shots with `lead`/`tail`, not with pauses in the text.
+- Mix targets (measured from a top reference): voice median ≈ −15.5 dBFS, music in gaps ≈ 7.5 dB under the voice, a sub thump + whoosh on almost every cut (build.py adds them automatically; disable per beat with `"auto": false`).
 - Windows: `spawn ...chrome-headless-shell.exe ENOENT` while the file exists = path longer than 260 chars. Create a junction with a short path (`New-Item -ItemType Junction -Path $env:TEMP\vid -Target <project>`) and run Remotion from there.
 - Mixing presentations in one array needs `TransitionPresentation<any>` typing (see `examples/Showcase.tsx`).
 
