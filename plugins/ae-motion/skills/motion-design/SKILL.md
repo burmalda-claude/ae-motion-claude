@@ -25,6 +25,10 @@ You are the motion designer, editor **and** sound designer. The user gives one l
 
 `commands/*.md` → `/ae-motion:<mode>` (edit, cinematic, lyric, clip, tutorial, gym, gaming, ad, amv, travel, meme, news, fashion, horror, wedding, realestate, asmr, reaction). Each loads `modes/<mode>.json` — format sizes, palette, fonts, grade, text presets, timing, `effects` (the modifier stack: kit component names), `exits`, `audio` (voice/rate/musicStyle/bpm/sections, cut + beat behavior). A project file `.ae-motion/modes/<mode>.json` overrides the built-in one. Media-driven modes (lyric, clip, reaction, gaming) use `tools/transcribe.py` on the user's file instead of TTS. Mode building blocks live in `kit/modes.tsx` (Grade, LightLeak, VHS, Flicker, AnamorphicFlare, ImpactFrame, ChapterCard, QuoteCard, KaraokeLine, MemeCaption, Wasted, JPText, LowerThird, ProgressBar, Ticker, BreakingBanner, StepBadge, HighlightBox, Callout, ZoomTo, StatCard, TimerDisplay, Hitmarker, KillFeed, ComboCounter, PriceTag, CTAButton, BeforeAfter, MapPin, DayCounter, PiP, CommentBubble, MangaPanels, EmojiPop). `examples/Modes.tsx` flies through all modes.
 
+## Transitions
+
+Use `kit/cuts.tsx` — read `references/transitions.md` before placing any transition. Clean cut first; `transition(kind)` inside `<TransitionSeries>` (automatic overlap); `pickTransition()` for the choice; `SpeedRampCut`, `MorphText` + `GooDefs`; `tools/beats.py` for beat-synced cuts. Commands: `/ae-motion:transition`, `trans-clean`, `trans-dissolve`, `trans-wipe`, `trans-speedramp`, `trans-beat`, `trans-morph`, `trans-glitch`, `trans-random`. Demo: `examples/Transitions.tsx`.
+
 ## Sync rules (what makes it feel edited, not generated)
 
 - **Every on-screen word lands on its spoken frame**: `delay={w(i)}`. Never hard-code word delays when there is a voice line.
@@ -94,6 +98,7 @@ Remotion renders HTML/CSS/SVG/WebGL. Real 3D scenes need `@remotion/three`; part
 
 ## References
 
+- `references/transitions.md` — transition engine: categories, controls, picker, the 3 rules.
 - `references/director.md` — prompt → brief → beat list, defaults, theme by topic.
 - `references/editing.md` — rhythm, cut types, shot vocabulary, layout, sound design.
 - `references/reference-breakdown.md` — frame-by-frame breakdown of a top kinetic trailer: what each beat does.

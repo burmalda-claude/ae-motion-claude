@@ -59,6 +59,31 @@ One command = the whole stack (effects, text presets, fonts, timing, beat/audio 
 | `/ae-motion:asmr` | ASMR, satisfying content, slow edits. | Camera(push 0.03, drift 2), Glow(soft), Grain(0.03) | 9:16, 1:1 | минимум графики, максимум плавности |
 | `/ae-motion:reaction` | Reactions, commentary, breakdowns. | PiP, CommentBubble, EmojiPop, ZoomTo(emotion), LowerThird, Captions | 16:9, 9:16 | PiP-рамка + всплывающие комментарии зрителей |
 
+## Transitions
+
+A separate engine (`kit/cuts.tsx`, rules in `references/transitions.md`): a transition should disappear into the cut and serve the emotion of the shot. 5 categories (Cut, Dissolve, Wipe & Reveal, Speed Ramp, Atmospheric) + 2026 trend presets (morph text, liquid, kinetic split, 2D/3D depth, glitch/dark phonk). Every transition has controls: duration (6–16 f for invisible ones), easing (Ease / Bezier / S-curve — linear is refused by default), motion blur on moving transitions, automatic overlap (`<TransitionSeries>`), audio sync (`tools/beats.py` → beats, downbeats, hits, energy). `pickTransition()` chooses from shot energy, BPM and intent — the clean cut first.
+
+| Command | Category | Duration (frames) | Easing | Audio | Example |
+|---|---|---|---|---|---|
+| `/ae-motion:transition` | all | per cut | per kind | SFX on every transition frame | pick + place transitions for every cut of the video |
+| `/ae-motion:trans-clean` | Cut | 0 (dissolve 10 if the cut jumps) | — | thump on the cut | clean cut, dissolve only if the cut does not read |
+| `/ae-motion:trans-dissolve` | Dissolve | 6–12 | Ease | soft whoosh | cross / blur / 100→103% scale dissolve |
+| `/ae-motion:trans-wipe` | Wipe & Reveal | 12–14 | Ease | swish into the edge | circle/diagonal/panel, eye → moon match cut, track matte; always with an edge |
+| `/ae-motion:trans-speedramp` | Speed Ramp | ramp 12 | S-curve | whoosh on the cut | 100% → 45% → cut → 45% → 100%, no effect |
+| `/ae-motion:trans-beat` | any, on beats | 6–16 | per kind | beats.py: beats / downbeats / hits | beat analysis first, transitions centered on beats |
+| `/ae-motion:trans-morph` | Trend: morph text | 12–16 | S-curve | swish | letters melt into letters (MorphText) + liquid |
+| `/ae-motion:trans-glitch` | Atmospheric / phonk | 4–8 | Ease | glitch + impact on the hit | RGB split + slices + VHS + 1-frame invert |
+| `/ae-motion:trans-random` | smart | per kind | per kind | BPM + energy per beat | chooses by shot energy & BPM, never the same twice in a row |
+
+### Why your transitions look cheap
+1. **Overlap.** A transition needs frames from both shots; without overlap it flashes or freezes. The engine overlaps automatically — plan shot lengths with it in mind.
+2. **Restraint.** The clean cut is the best transition. One effect per 5–10 cuts, never the same twice in a row, 6–16 frames.
+3. **Motivation.** Every effect needs a reason: time passes (dissolve), a shape matches (match reveal), motion continues (whip, speed ramp), the beat hits (glitch on `hits`).
+
+References: MridhaFX · DJordanMedia · LesFM · Domer AI.
+
+Demo: `examples/Transitions.tsx` (28 s): cheesy preset vs clean cut → 5 categories with the controls on screen → beat-synced phonk section → finale.
+
 ## Styles (themes)
 
 Name a theme in your request (or don't — Claude picks one by topic) — Claude uses its palette, fonts and motion character for the whole video.

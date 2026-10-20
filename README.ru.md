@@ -59,6 +59,31 @@
 | `/ae-motion:asmr` | ASMR, satisfying content, slow edits. | Camera(push 0.03, drift 2), Glow(soft), Grain(0.03) | 9:16, 1:1 | минимум графики, максимум плавности |
 | `/ae-motion:reaction` | Reactions, commentary, breakdowns. | PiP, CommentBubble, EmojiPop, ZoomTo(emotion), LowerThird, Captions | 16:9, 9:16 | PiP-рамка + всплывающие комментарии зрителей |
 
+## Переходы
+
+Отдельный движок (`kit/cuts.tsx`, правила в `references/transitions.md`): переход должен исчезать в склейке и обслуживать эмоцию кадра. 5 категорий (Cut, Dissolve, Wipe & Reveal, Speed Ramp, атмосферные) + тренды 2026 (морфинг текста, жидкий переход, кинетический разрыв, 2D/3D глубина, глитч/dark phonk). У каждого перехода есть ручки: длительность (6–16 кадров для «невидимых»), easing (Ease / Bezier / S-кривая — линейный по умолчанию запрещён), motion blur на движущихся переходах, автоматический overlap (`<TransitionSeries>`), синхронизация с аудио (`tools/beats.py` → доли, сильные доли, удары, энергия). `pickTransition()` выбирает по энергии кадров, BPM и смыслу — сначала чистый кат.
+
+| Команда | Категория | Длительность (кадры) | Easing | Аудио | Пример |
+|---|---|---|---|---|---|
+| `/ae-motion:transition` | all | per cut | per kind | SFX on every transition frame | pick + place transitions for every cut of the video |
+| `/ae-motion:trans-clean` | Cut | 0 (dissolve 10 if the cut jumps) | — | thump on the cut | clean cut, dissolve only if the cut does not read |
+| `/ae-motion:trans-dissolve` | Dissolve | 6–12 | Ease | soft whoosh | cross / blur / 100→103% scale dissolve |
+| `/ae-motion:trans-wipe` | Wipe & Reveal | 12–14 | Ease | swish into the edge | circle/diagonal/panel, eye → moon match cut, track matte; always with an edge |
+| `/ae-motion:trans-speedramp` | Speed Ramp | ramp 12 | S-curve | whoosh on the cut | 100% → 45% → cut → 45% → 100%, no effect |
+| `/ae-motion:trans-beat` | any, on beats | 6–16 | per kind | beats.py: beats / downbeats / hits | beat analysis first, transitions centered on beats |
+| `/ae-motion:trans-morph` | Trend: morph text | 12–16 | S-curve | swish | letters melt into letters (MorphText) + liquid |
+| `/ae-motion:trans-glitch` | Atmospheric / phonk | 4–8 | Ease | glitch + impact on the hit | RGB split + slices + VHS + 1-frame invert |
+| `/ae-motion:trans-random` | smart | per kind | per kind | BPM + energy per beat | chooses by shot energy & BPM, never the same twice in a row |
+
+### Почему ваши переходы выглядят дёшево
+1. **Overlap.** Переходу нужны кадры обоих шотов; без перекрытия он мигает или замирает. Движок перекрывает сам — планируйте длину шотов с учётом этого.
+2. **Сдержанность.** Лучший переход — чистый кат. Один эффект на 5–10 склеек, никогда один и тот же дважды подряд, 6–16 кадров.
+3. **Мотивация.** У каждого эффекта должна быть причина: прошло время (dissolve), совпала форма (match reveal), продолжается движение (whip, speed ramp), ударил бит (glitch на `hits`).
+
+Референсы: MridhaFX · DJordanMedia · LesFM · Domer AI.
+
+Демо: `examples/Transitions.tsx` (28 с): «пресет из 2012» против чистого ката → 5 категорий с ручками на экране → переходы в бит под фонк → финал.
+
 ## Стили (темы)
 
 Назовите тему в запросе (или не называйте — Claude подберёт по смыслу) — Claude возьмёт её палитру, шрифты и характер движения на весь ролик.
