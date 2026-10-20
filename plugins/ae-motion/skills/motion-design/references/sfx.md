@@ -2,6 +2,12 @@
 
 Every visual accent (transition, hit, text appearing, glitch) gets a *motivated* sound layer — not a random whoosh from a free pack.
 
+## Source order (default: ONLINE)
+1. **Search the internet first** for every SFX the edit needs: Mixkit (`mixkit.co/free-sound-effects/<query>/` — direct mp3 previews on `assets.mixkit.co`), Pixabay (`pixabay.com/sound-effects/search/<query>/`), Freesound, YouTube (meme clips, phonk SFX packs). Search by mood + use ("dark whoosh transition", "phonk 808 hit", "vine boom").
+2. Shortlist per cue: name, link, length, license. **Ask before downloading** (list all files, sources, sizes in one message — one "yes" covers that list). Save to `public/sfx/online/`, log in `CREDITS.md`.
+3. Use the files as cues by path: `["sfx/online/whoosh_dark.mp3", "w0", 0.8]` (build.py accepts any audio path under `public/`).
+4. Procedural specs (`whoosh:...`) only when offline, when nothing fits, or the user asks.
+
 ## Tools
 - `tools/sfxgen.py` — parametric generators (unlimited variations via `seed`/params), layer stacks per transition, genre packs, beat sync, AI generation.
 - `tools/audit.py` — masking, clipping, true peak, LUFS, phase, DC, beat clashes, AI artifacts.

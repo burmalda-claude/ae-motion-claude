@@ -1,0 +1,4 @@
+# Credits
+- Music: "Brazilian Phonk With Heavy Bass Drop" — Alex Morgan, album "Phonk & Drift", Free Music Archive — https://freemusicarchive.org/music/alex-morgan/phonk-drift/brazilian-phonk-with-heavy-bass-drop/ — CC BY 4.0 (attribution required; commercial use allowed).
+- SFX: Mixkit (https://mixkit.co) — Mixkit Sound Effects Free License (free for commercial use, no attribution required): Cinematic whoosh fast transition (1492), Fast whoosh transition (1490), Air zoom vacuum (2608), Epic movie trailer whoosh impact (2918), Big cinematic impact (788), Cinematic whoosh deep impact (1143), Reverse cinematic impact trailer (784), Small electric glitch (2595), Glitch sci fi rewind transition (1093), Futuristic bass hit (2303), Knocking sub bass (2300).
+- Photo: user-provided ficus photo, background removed.

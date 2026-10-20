@@ -175,6 +175,10 @@ def main():
     vrng = np.random.default_rng(5)
 
     def sfx(name):
+        if name not in cache and os.path.splitext(name)[1].lower() in (".mp3", ".wav", ".ogg", ".m4a", ".flac"):
+            # a real recording found online: path relative to public/ (or absolute)
+            path = name if os.path.isabs(name) else os.path.join(a.project, "public", name)
+            cache[name] = S.norm(S.to_stereo(load_audio(path)), 0.89)
         if name not in cache:
             if ":" not in name and name not in S.SFX:
                 raise KeyError(f"unknown sfx '{name}'. Use a built-in name ({', '.join(S.SFX)}) or a generator spec (python tools/sfxgen.py list)")
@@ -183,6 +187,8 @@ def main():
         return G._pitch(x, vrng.uniform(-vary, vary)) if vary else x
 
     def ends_on_cue(name):
+        if "/" in name or "\\" in name:  # files: whoosh/riser/swell in the name -> end on the cue
+            return any(k in os.path.basename(name).lower() for k in ("whoosh", "riser", "swell", "reverse", "swoosh", "rise"))
         cat, p = G.parse(name)
         return name in S.ENDS_ON_CUE or cat in G.ENDS_ON_CUT or (cat == "trans" and p.get("kind") in ("whiteout", "reverse_impact"))
 
