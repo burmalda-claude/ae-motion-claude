@@ -59,6 +59,41 @@
 | `/ae-motion:asmr` | ASMR, satisfying content, slow edits. | Camera(push 0.03, drift 2), Glow(soft), Grain(0.03) | 9:16, 1:1 | минимум графики, максимум плавности |
 | `/ae-motion:reaction` | Reactions, commentary, breakdowns. | PiP, CommentBubble, EmojiPop, ZoomTo(emotion), LowerThird, Captions | 16:9, 9:16 | PiP-рамка + всплывающие комментарии зрителей |
 
+## Музыка и SFX
+
+**Музыка ищется в интернете, а не генерируется** (`/ae-motion:music-find`, `references/music.md`): жанр подбирается по теме и настроению (эдиты → бразильский / дрифт-фонк, грустное → slowed + reverb, аниме → фонк / jcore, космос → эпик-трейлер, реклама → бодрый корпоратив…), Claude собирает шорт-лист из 3–5 треков, **перед каждой загрузкой спрашивает разрешение**, скачивает через `yt-dlp`, анализирует бит (`beats.py`) и начинает эдит за 1–2 такта до дропа. Сгенерированная музыка остаётся запасным вариантом.
+
+**SFX-движок** (`tools/sfxgen.py`, `tools/audit.py`, `references/sfx.md`): 8 категорий параметрических генераторов (вариаций сколько угодно), стеки из 2–3 слоёв под каждый переход, паки по жанрам, синхронизация с битом, AI-генерация (ElevenLabs, если задан ключ), аудит маскировки речи / клиппинга / фазы / true peak / LUFS / «флэмов» с битом / артефактов AI. Команды: `sfx-find`, `sfx-generate`, `sfx-sync`, `sfx-layer`, `sfx-audit`, `sfx-pack`.
+
+| Категория | Примеры | Источник / лицензия | Команда |
+|---|---|---|---|
+| Whoosh-и и свайпы | short/long, light/heavy, LR/RL/up/down, reverse; 100 variations | procedural · Pixabay/Mixkit (free) · SONNISS | `sfx-layer`, `sfx-pack` |
+| Удары и хиты | snare, boom, sub drop, glass, metal; light→heavy, short/long tail | procedural · Pixabay · SONNISS | `sfx-sync`, `sfx-layer` |
+| Райзеры и нагнетание | tonal, noise, reverse, uplifter, downlifter; 0.5–8 s; ends on hit/drop/silence | procedural · ElevenLabs | `sfx-generate` |
+| Эмбиент и room tone | room, office, street, forest, coffee shop, rain, wind; seamless loops | procedural · ElevenLabs/Stable Audio · Freesound (check license) | `sfx-generate`, `sfx-find` |
+| UI и техно | click, tap, toggle, notification, hover, typing, digital; dry/wet | procedural · Mixkit | `sfx-pack tech` |
+| Под переходы | glitch burst, reverse impact, tape stop, sub drop, whiteout swell | procedural | `sfx-layer` |
+| Тренды 2026 | hook click/ding/pop, vine boom, boing, record scratch, wasted, phonk 808, distorted hit, cowbell, tesla arc, corrupted, sci-fi whoosh | procedural · meme voice clips via search (Pixabay/YouTube) | `sfx-pack meme/phonk/tech`, `sfx-find` |
+| ASMR | soft clicks, rustle, wet | procedural | `sfx-generate` |
+
+### Почему ваши SFX звучат дёшево
+1. **Слоистость** — один звук звучит тонко. Whoosh сверху + удар для тела + саб-хвост для веса.
+2. **Синхронизация** — в кадр, а не «около». Сдвиг на 1–3 кадра звучит как флэм (`sfx-audit` это ловит).
+3. **Контекст** — звук под жанр (фонк-808 для эдитов, сухие клики для туториалов, бумы + райзеры для синематика), а не один универсальный whoosh.
+
+### AI или библиотека: когда что
+- **Процедурные (встроенные)** — по умолчанию: точная длина, мгновенные вариации, без загрузок.
+- **AI-генерация** — конкретные реальные звуки и длинные эмбиенты; всегда через аудит («металлические» / роботные артефакты).
+- **Библиотека** — культовые записи (голосовые мем-клипы, настоящий фоли); спрашивать перед загрузкой, записывать в `CREDITS.md`.
+
+### Авторы и лицензии
+В `references/sfx.md` — таблица всех источников, которые может предложить плагин, с лицензией и коммерческой пригодностью (Pixabay, Mixkit, YouTube Audio Library, Freesound, SONNISS, ElevenLabs, Stable Audio, AudioGen). Скачанные треки и звуки записываются в `CREDITS.md` проекта (автор, источник, лицензия, коммерческое использование).
+
+Референсы: DJordanMedia · Versely · SONNISS · AEscripts AI Scorpion SFX.
+
+### Что делают настоящие эдиты
+`references/edits-breakdown.md`: 28 TikTok-эдитов, разобранных по кадрам, — ~7 склеек на 10 с, половина на звуковых ударах, ~2 вспышки в белое на 10 с, тряска на ударах, зум-панчи, стробоскоп, ореол-свечение; музыка 108–144 BPM, очень много саба. Это стало `kit/editfx.tsx` и переходами `whiteout` / `blackDip`.
+
 ## Переходы
 
 Отдельный движок (`kit/cuts.tsx`, правила в `references/transitions.md`): переход должен исчезать в склейке и обслуживать эмоцию кадра. 5 категорий (Cut, Dissolve, Wipe & Reveal, Speed Ramp, атмосферные) + тренды 2026 (морфинг текста, жидкий переход, кинетический разрыв, 2D/3D глубина, глитч/dark phonk). У каждого перехода есть ручки: длительность (6–16 кадров для «невидимых»), easing (Ease / Bezier / S-кривая — линейный по умолчанию запрещён), motion blur на движущихся переходах, автоматический overlap (`<TransitionSeries>`), синхронизация с аудио (`tools/beats.py` → доли, сильные доли, удары, энергия). `pickTransition()` выбирает по энергии кадров, BPM и смыслу — сначала чистый кат.

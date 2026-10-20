@@ -52,7 +52,9 @@
       "drop"
     ],
     "cut": "hit on every frag timecode",
-    "beat": "drop on the clutch"
+    "beat": "drop on the clutch",
+    "music": "search online first (references/music.md); generated musicStyle only as fallback",
+    "sfxPack": "phonk"
   },
   "example": "/ae-motion:gaming frags.mp4 0:03 0:07 0:12 — hitmarkers и счётчики по таймкодам",
   "trigger": "/ae-motion:gaming",

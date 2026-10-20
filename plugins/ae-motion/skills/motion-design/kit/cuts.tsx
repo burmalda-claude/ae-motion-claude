@@ -233,6 +233,27 @@ const DepthComp: React.FC<P<Record<string, never>>> = ({ children, presentationD
   return <AbsoluteFill style={{ ...style, transformStyle: "preserve-3d" }}>{children}</AbsoluteFill>;
 };
 
+// ---------------------------------------------------------------- edit staples (measured in 28 TikTok edits)
+/** Whiteout: A blows out to white with bloom, B emerges from white — the #1 edit transition. */
+const WhiteoutComp: React.FC<P<{ color?: string }>> = ({ children, presentationDirection, presentationProgress: p, passedProps }) => {
+  const c = passedProps.color ?? "#fff";
+  const k = enter(presentationDirection) ? 1 - p : p; // 1 = fully white
+  const w = EASE.out(Math.min(1, k * 1.4));
+  const show = enter(presentationDirection) ? p >= 0.35 : p < 0.35;
+  if (!show) return null;
+  return (
+    <AbsoluteFill>
+      <AbsoluteFill style={{ filter: `brightness(${1 + w * 2.5}) blur(${w * 12}px)`, transform: `scale(${1 + w * 0.08})` }}>{children}</AbsoluteFill>
+      <AbsoluteFill style={{ background: c, opacity: w }} />
+    </AbsoluteFill>
+  );
+};
+/** Black dip: A cuts to black for the middle frames, B cuts in. */
+const BlackDipComp: React.FC<P<Record<string, never>>> = ({ children, presentationDirection, presentationProgress: p }) => {
+  const show = enter(presentationDirection) ? p >= 0.75 : p < 0.25;
+  return show ? <AbsoluteFill>{children}</AbsoluteFill> : null;
+};
+
 // ---------------------------------------------------------------- registry
 export type CutKind =
   | "cut"
@@ -251,7 +272,9 @@ export type CutKind =
   | "split"
   | "depth"
   | "whip"
-  | "zoom";
+  | "zoom"
+  | "whiteout"
+  | "blackDip";
 
 export const CUT_CATEGORY: Record<CutKind, "cut" | "dissolve" | "wipe" | "speed" | "atmospheric" | "trend"> = {
   cut: "cut",
@@ -271,6 +294,8 @@ export const CUT_CATEGORY: Record<CutKind, "cut" | "dissolve" | "wipe" | "speed"
   depth: "trend",
   whip: "speed",
   zoom: "speed",
+  whiteout: "atmospheric",
+  blackDip: "cut",
 };
 
 /** Default frames: 6–16 for "invisible" transitions; longer only for drama. */
@@ -292,6 +317,8 @@ export const CUT_FRAMES: Record<CutKind, number> = {
   depth: 14,
   whip: 8,
   zoom: 10,
+  whiteout: 8,
+  blackDip: 8,
 };
 const DEFAULT_EASE: Partial<Record<CutKind, CutEaseName>> = { whip: "sCurve", zoom: "sCurve", depth: "sCurve", split: "in", liquid: "ease", glitch: "ease", phonk: "ease" };
 /** Moving transitions get motion blur by default (whip, zoom, split, depth already include it). */
@@ -329,6 +356,8 @@ export function transition(kind: CutKind, opts: CutOptions = {}): { presentation
     depth: { component: DepthComp, props: {} },
     whip: whipP({ direction: "left", ...(pr as object) }),
     zoom: zoomBlurP(),
+    whiteout: { component: WhiteoutComp, props: { ...pr } },
+    blackDip: { component: BlackDipComp, props: {} },
   };
   return { presentation: comp[kind], timing: linearTiming({ durationInFrames: frames, easing: ease }), frames };
 }
@@ -346,7 +375,7 @@ export function pickTransition(c: CutContext): { kind: CutKind; frames: number; 
   if (c.from === c.to && c.to !== "high") return f("cut", "same energy and rhythm — a clean cut is invisible");
   if (c.from === "high" && c.to === "low") return f("lightLeak", "energy drops — soften with light", 16);
   if (c.from !== "high" && c.to === "high") return bpm >= 120 ? f("zoom", "energy jumps — punch into the drop on the beat", 8) : f("whip", "energy rises — whip into it", 8);
-  if (c.from === "high" && c.to === "high") return bpm >= 130 ? f("phonk", "high-energy edit at fast tempo — short glitch hit on the beat", 6) : c.onBeat ? f("cut", "on the beat the cut itself is the hit") : f("whip", "keep momentum with motion", 8);
+  if (c.from === "high" && c.to === "high") return c.onBeat ? f("cut", "on the beat the cut itself is the hit") : bpm >= 130 ? f("phonk", "high-energy edit at fast tempo — short glitch hit on the beat", 6) : f("whiteout", "edit staple: bloom whiteout on the hit", 8);
   if (c.from === "mid" && c.to === "low") return f("scaleDissolve", "gentle step down — dissolve with a 3% push", 10);
   return f("shapeWipe", "different scenes, same energy — a clean shape wipe with an edge", 12);
 }

@@ -23,6 +23,10 @@ Cue positions (frames, relative to the shot): 12 | "w3" (word 3 starts) | "w3+2"
 SFX that swell into a moment (riser, riser_short, swish_in, reverse_swell) END on their cue.
 Music modes per beat (persist until changed): intro | drop | build | break | ui | stop.
 musicStyle: edm | phonk | lofi | ambient | cinematic | corporate | jcore. Top-level "music": false = no bed (ASMR, your own track).
+Real music (preferred for edits, references/music.md): "musicFile": "public/music/x.mp3", "musicStart": 12.3 (seconds).
+"sfxTrack": [[spec, absolute_frame, vol], ...] — global SFX lane (tools/sfxgen.py sync fills it from beats.json).
+SFX cues accept built-in names, generator specs ("whoosh:len=12f,dir=LR,tone=dark") and layer stacks ("layer:whip").
+Mix: "sfxDuck": dB SFX are lowered under speech (6), "sfxPresenceDuck": extra dB cut of SFX at 1–4 kHz under speech (9), "sfxVary": ± semitones random per placement (0), "lufs": -14 (social) | -23 (TV).
 A beat without "text" is a silent visual beat (needs "min").
 Voices: en-US-BrianMultilingualNeural (default, most expressive, speaks Russian well), en-US-AndrewMultilingualNeural,
 ru-RU-DmitryNeural, ru-RU-SvetlanaNeural, en-US-AvaMultilingualNeural (female). Edge TTS needs internet.
@@ -41,6 +45,7 @@ import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import sound as S  # noqa: E402
+import sfxgen as G  # noqa: E402
 
 SR = S.SR
 
@@ -166,12 +171,20 @@ def main():
     fx = np.zeros((n, 2))
     cache = {}
 
+    vary = float(cfg.get("sfxVary", 0.0))  # random ± semitones per placement so repeats don't sound copy-pasted
+    vrng = np.random.default_rng(5)
+
     def sfx(name):
         if name not in cache:
-            if name not in S.SFX:
-                raise KeyError(f"unknown sfx '{name}'. Available: {', '.join(S.SFX)}")
-            cache[name] = S.norm(S.to_stereo(S.SFX[name]()), 0.89)
-        return cache[name]
+            if ":" not in name and name not in S.SFX:
+                raise KeyError(f"unknown sfx '{name}'. Use a built-in name ({', '.join(S.SFX)}) or a generator spec (python tools/sfxgen.py list)")
+            cache[name] = S.norm(G.render(name), 0.89)
+        x = cache[name]
+        return G._pitch(x, vrng.uniform(-vary, vary)) if vary else x
+
+    def ends_on_cue(name):
+        cat, p = G.parse(name)
+        return name in S.ENDS_ON_CUE or cat in G.ENDS_ON_CUT or (cat == "trans" and p.get("kind") in ("whiteout", "reverse_impact"))
 
     # 3) place voice + sfx
     for b, sh in zip(beats, shots):
@@ -184,16 +197,32 @@ def main():
             vol = item[2] if len(item) > 2 else 0.8
             f = resolve(cue, sh)
             explicit_at_cut |= f <= 2
-            x = sfx(name)
-            t = base + f / fps - (len(x) / SR if name in S.ENDS_ON_CUE else 0)
-            S.place(fx, x, t, vol)
+            # "layer:<transition>" expands into the 2–3 layer stack for that transition (sfxgen.LAYERS)
+            stack = [(spec, None) for spec, _ in G.layer(name.split(":", 1)[1])] if name.startswith("layer:") else [(name, None)]
+            for spec, _ in stack:
+                x = sfx(spec)
+                t = base + f / fps - (len(x) / SR if ends_on_cue(spec) else 0)
+                S.place(fx, x, t, vol)
         if cfg.get("autoCut", True) and b.get("auto", True) and sh["from"] > 0 and not explicit_at_cut:
             S.place(fx, sfx("thump"), base, 0.45)
             S.place(fx, sfx("whoosh_fast"), base - 0.08, 0.22)
 
+    # global SFX track at absolute frames (written by `sfxgen.py sync` from beats.json): [[spec, frame, vol], ...]
+    for spec, frame, vol in cfg.get("sfxTrack", []):
+        for sp, _ in (G.layer(spec.split(":", 1)[1]) if spec.startswith("layer:") else [(spec, None)]):
+            x = sfx(sp)
+            S.place(fx, x, frame / fps - (len(x) / SR if ends_on_cue(sp) else 0), vol)
+
     # 4) music with sections from beats
     if a.no_music or cfg.get("music") is False:
         mus = np.zeros((n, 2))
+    elif cfg.get("musicFile"):  # a real track found online (references/music.md)
+        y = load_audio(os.path.join(a.project, cfg["musicFile"]) if not os.path.isabs(cfg["musicFile"]) else cfg["musicFile"])
+        y = y[int(float(cfg.get("musicStart", 0)) * SR) :][:n]
+        mus = S.to_stereo(np.pad(y, (0, n - len(y))))
+        fo = int(1.0 * SR)
+        mus[-fo:] *= np.linspace(1, 0, fo)[:, None]
+        mus = S.norm(mus, 0.8)
     else:
         sections, cur = [], None
         for b, sh in zip(beats, shots):
@@ -205,14 +234,18 @@ def main():
             sections.insert(0, (0.0, "intro"))
         mus = S.music(sections, total_s, cfg.get("bpm", 123), cfg.get("key", "A"), cfg.get("musicStyle", "edm"))[:n]
         mus = S.norm(mus, 0.8)
-        # duck under voice (sidechain from voice envelope)
-        venv = np.abs(vbus).max(axis=1)
-        a_ = np.exp(-1 / (0.25 * SR))
-        from scipy import signal as sg
+    # duck music (and, less, SFX) under the voice (sidechain from the voice envelope)
+    from scipy import signal as sg
 
-        venv = sg.lfilter([1 - a_], [1, -a_], venv)
-        venv = np.minimum(1, venv / (venv.max() * 0.25 + 1e-9))
-        mus *= (1 - 0.55 * venv)[:, None]
+    venv = np.abs(vbus).max(axis=1)
+    a_ = np.exp(-1 / (0.25 * SR))
+    venv = sg.lfilter([1 - a_], [1, -a_], venv)
+    venv = np.minimum(1, venv / (venv.max() * 0.25 + 1e-9)) if venv.max() > 0 else venv
+    mus *= (1 - 0.55 * venv)[:, None]
+    fx *= (1 - (1 - 10 ** (-float(cfg.get("sfxDuck", 6)) / 20)) * venv)[:, None]
+    # carve the speech-intelligibility band (1–4 kHz) out of the SFX while the voice talks, keep the body/sub of hits
+    pres = S.bandpass(fx, 1000, 4000)
+    fx -= pres * ((1 - 10 ** (-float(cfg.get("sfxPresenceDuck", 9)) / 20)) * venv)[:, None]
 
     # 5) mix + master
     mix = vbus + fx * cfg.get("sfxGain", 0.8) + mus * cfg.get("musicGain", 0.5)
@@ -225,18 +258,26 @@ def main():
     raw = os.path.join(out_dir, "master_raw.wav")
     S.write_wav(raw, mix)
     final = os.path.join(out_dir, "master.wav")
+    # loudness: measure integrated LUFS (ebur128), apply the gain, then a true-peak guard (4x oversampled) at -1 dBTP
+    target = float(cfg.get("lufs", -14))
     try:
-        import imageio_ffmpeg
+        import audit as A
 
-        r = subprocess.run(
-            [imageio_ffmpeg.get_ffmpeg_exe(), "-v", "error", "-y", "-i", raw, "-af", "loudnorm=I=-14:TP=-1.0:LRA=9", "-ar", str(SR), final],
-            capture_output=True,
-        )
-        if r.returncode != 0:
-            raise RuntimeError(r.stderr.decode(errors="ignore"))
+        L = A.lufs(raw)
+        if L is not None:
+            mix = mix * 10 ** ((target - L) / 20)
+        from scipy import signal as sg2
+
+        for _ in range(3):
+            tp_db = 20 * np.log10(np.abs(sg2.resample_poly(mix, 4, 1, axis=0)).max() + 1e-12)
+            if tp_db <= -1.05:
+                break
+            # saturated/distorted hits overshoot between samples: limit, and if that is not enough, trade a little loudness
+            mix = S.limiter(mix, -1.6) if _ == 0 else mix * 10 ** ((-1.1 - tp_db) / 20)
+        S.write_wav(final, mix)
         os.remove(raw)
     except Exception as e:  # no ffmpeg: keep the limited mix
-        print("  loudnorm skipped:", e)
+        print("  loudness step skipped:", e)
         os.replace(raw, final)
     print(f"  master: {final}")
 

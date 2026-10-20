@@ -60,7 +60,9 @@
       "drop"
     ],
     "cut": "thump+flash+shake on every beat",
-    "beat": "slam on beat, hold on final quote"
+    "beat": "slam on beat, hold on final quote",
+    "music": "search online first (references/music.md); generated musicStyle only as fallback",
+    "sfxPack": "gym"
   },
   "example": "/ae-motion:gym — 15-сек мотивашка с хуком, stat-картой и финальным quote",
   "trigger": "/ae-motion:gym",

@@ -59,6 +59,41 @@ One command = the whole stack (effects, text presets, fonts, timing, beat/audio 
 | `/ae-motion:asmr` | ASMR, satisfying content, slow edits. | Camera(push 0.03, drift 2), Glow(soft), Grain(0.03) | 9:16, 1:1 | минимум графики, максимум плавности |
 | `/ae-motion:reaction` | Reactions, commentary, breakdowns. | PiP, CommentBubble, EmojiPop, ZoomTo(emotion), LowerThird, Captions | 16:9, 9:16 | PiP-рамка + всплывающие комментарии зрителей |
 
+## Music & SFX
+
+**Music is searched online, not generated** (`/ae-motion:music-find`, `references/music.md`): the genre is picked by topic and mood (edits → Brazilian / drift phonk, sad → slowed + reverb, anime → phonk / jcore, space → epic trailer, ads → upbeat corporate…), Claude shortlists 3–5 tracks, **asks before every download**, fetches with `yt-dlp`, analyzes the beat (`beats.py`) and starts the edit 1–2 bars before the drop. Generated music remains as a fallback.
+
+**SFX engine** (`tools/sfxgen.py`, `tools/audit.py`, `references/sfx.md`): 8 categories as parametric generators (unlimited variations), 2–3 layer stacks per transition, genre packs, beat sync, AI generation (ElevenLabs if a key is set), audit for masking / clipping / phase / true peak / LUFS / beat clashes / AI artifacts. Commands: `sfx-find`, `sfx-generate`, `sfx-sync`, `sfx-layer`, `sfx-audit`, `sfx-pack`.
+
+| Category | Examples | Source / license | Command |
+|---|---|---|---|
+| Whooshes & swipes | short/long, light/heavy, LR/RL/up/down, reverse; 100 variations | procedural · Pixabay/Mixkit (free) · SONNISS | `sfx-layer`, `sfx-pack` |
+| Impacts & hits | snare, boom, sub drop, glass, metal; light→heavy, short/long tail | procedural · Pixabay · SONNISS | `sfx-sync`, `sfx-layer` |
+| Risers & build-ups | tonal, noise, reverse, uplifter, downlifter; 0.5–8 s; ends on hit/drop/silence | procedural · ElevenLabs | `sfx-generate` |
+| Ambience & room tone | room, office, street, forest, coffee shop, rain, wind; seamless loops | procedural · ElevenLabs/Stable Audio · Freesound (check license) | `sfx-generate`, `sfx-find` |
+| UI & tech | click, tap, toggle, notification, hover, typing, digital; dry/wet | procedural · Mixkit | `sfx-pack tech` |
+| Transition-specific | glitch burst, reverse impact, tape stop, sub drop, whiteout swell | procedural | `sfx-layer` |
+| Trends 2026 | hook click/ding/pop, vine boom, boing, record scratch, wasted, phonk 808, distorted hit, cowbell, tesla arc, corrupted, sci-fi whoosh | procedural · meme voice clips via search (Pixabay/YouTube) | `sfx-pack meme/phonk/tech`, `sfx-find` |
+| ASMR | soft clicks, rustle, wet | procedural | `sfx-generate` |
+
+### Why your SFX sound cheap
+1. **Layering** — one sound is thin. Whoosh on top + impact for the body + sub tail for the weight.
+2. **Sync** — in the frame, not "around" it. 1–3 frames off reads as a flam (`sfx-audit` catches it).
+3. **Context** — the sound matches the genre (phonk 808 for edits, dry clicks for tutorials, booms + risers for cinematic), not one universal whoosh.
+
+### AI vs library: when to use what
+- **Procedural (built-in)** — default: exact length, instant variations, no downloads.
+- **AI generation** — specific real-world sounds and long ambiences; always audit (metallic / robotic artifacts).
+- **Library** — iconic recordings (meme voice clips, real foley); ask before downloading, log in `CREDITS.md`.
+
+### Credits & licenses
+See `references/sfx.md` → table of every suggested source with license and commercial use (Pixabay, Mixkit, YouTube Audio Library, Freesound, SONNISS, ElevenLabs, Stable Audio, AudioGen). Downloaded tracks and sounds are logged per project in `CREDITS.md` (author, source, license, commercial use).
+
+References: DJordanMedia · Versely · SONNISS · AEscripts AI Scorpion SFX.
+
+### What real edits do
+`references/edits-breakdown.md`: 28 TikTok edits measured frame by frame — ~7 cuts per 10 s, half of them on audio transients, ~2 whiteout flashes per 10 s, hit shakes, zoom punches, strobe flips, halation; music 108–144 BPM, very sub-heavy. These became `kit/editfx.tsx` and the `whiteout` / `blackDip` transitions.
+
 ## Transitions
 
 A separate engine (`kit/cuts.tsx`, rules in `references/transitions.md`): a transition should disappear into the cut and serve the emotion of the shot. 5 categories (Cut, Dissolve, Wipe & Reveal, Speed Ramp, Atmospheric) + 2026 trend presets (morph text, liquid, kinetic split, 2D/3D depth, glitch/dark phonk). Every transition has controls: duration (6–16 f for invisible ones), easing (Ease / Bezier / S-curve — linear is refused by default), motion blur on moving transitions, automatic overlap (`<TransitionSeries>`), audio sync (`tools/beats.py` → beats, downbeats, hits, energy). `pickTransition()` chooses from shot energy, BPM and intent — the clean cut first.

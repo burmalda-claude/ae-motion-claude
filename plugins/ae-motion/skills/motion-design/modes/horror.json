@@ -58,7 +58,9 @@
       "stop"
     ],
     "cut": "none",
-    "beat": "silence → screech + impact on the jumpscare frame, reverse_swell before it"
+    "beat": "silence → screech + impact on the jumpscare frame, reverse_swell before it",
+    "music": "search online first (references/music.md); generated musicStyle only as fallback",
+    "sfxPack": "horror"
   },
   "example": "/ae-motion:horror — VHS-эдит с jumpscare на 3-й секунде",
   "trigger": "/ae-motion:horror",

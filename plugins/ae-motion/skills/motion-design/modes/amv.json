@@ -59,7 +59,9 @@
       "drop"
     ],
     "cut": "impact frame + hit on every beat",
-    "beat": "flash + impact frame on hits"
+    "beat": "flash + impact frame on hits",
+    "music": "search online first (references/music.md); generated musicStyle only as fallback",
+    "sfxPack": "anime"
   },
   "example": "/ae-motion:amv — 20-сек эдит с impact-кадрами на каждый удар",
   "trigger": "/ae-motion:amv",

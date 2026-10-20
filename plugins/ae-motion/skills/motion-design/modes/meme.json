@@ -47,9 +47,10 @@
   "audio": {
     "voice": "en-US-BrianMultilingualNeural",
     "rate": "+10%",
-    "music": false,
+    "music": "search online first (references/music.md); generated musicStyle only as fallback",
     "cut": "random meme SFX",
-    "beat": "vine_boom on the punchline"
+    "beat": "vine_boom on the punchline",
+    "sfxPack": "meme"
   },
   "example": "/ae-motion:meme — top/bottom caption + zoom punch на ключевой фразе",
   "trigger": "/ae-motion:meme",

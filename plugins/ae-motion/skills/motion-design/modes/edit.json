@@ -31,7 +31,8 @@
     "shot_f": [
       12,
       60
-    ]
+    ],
+    "cuts_per_10s": 7.4
   },
   "effects": [
     "ZoomIn",
@@ -49,15 +50,21 @@
     "Starburst",
     "Pops",
     "Grain",
-    "Vignette"
+    "Vignette",
+    "BloomFlash",
+    "HitShake",
+    "ZoomPunch",
+    "InvertFlash",
+    "Strobe",
+    "Halation"
   ],
   "exits": [
+    "whiteout",
+    "cut",
     "zoom",
+    "glitch",
     "slice",
-    "whipL",
-    "whipR",
-    "streakY",
-    "spin"
+    "whipL"
   ],
   "audio": {
     "voice": "en-US-BrianMultilingualNeural",
@@ -72,7 +79,8 @@
       "drop"
     ],
     "cut": "thump+whoosh on every cut",
-    "beat": "bg flips + punch zoom on every beat in drops"
+    "beat": "bg flips + punch zoom on every beat in drops",
+    "music": "search online first (references/music.md): Brazilian/drift phonk by mood; generated phonk only as fallback"
   },
   "example": "/ae-motion:edit — 20-сек эдит про фикус с электрической аурой",
   "trigger": "/ae-motion:edit",

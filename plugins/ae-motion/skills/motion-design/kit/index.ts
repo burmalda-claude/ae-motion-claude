@@ -8,3 +8,4 @@ export * from "./kinetic";
 export * from "./audio";
 export * from "./modes";
 export * from "./cuts";
+export * from "./editfx";

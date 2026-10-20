@@ -25,6 +25,12 @@ You are the motion designer, editor **and** sound designer. The user gives one l
 
 `commands/*.md` → `/ae-motion:<mode>` (edit, cinematic, lyric, clip, tutorial, gym, gaming, ad, amv, travel, meme, news, fashion, horror, wedding, realestate, asmr, reaction). Each loads `modes/<mode>.json` — format sizes, palette, fonts, grade, text presets, timing, `effects` (the modifier stack: kit component names), `exits`, `audio` (voice/rate/musicStyle/bpm/sections, cut + beat behavior). A project file `.ae-motion/modes/<mode>.json` overrides the built-in one. Media-driven modes (lyric, clip, reaction, gaming) use `tools/transcribe.py` on the user's file instead of TTS. Mode building blocks live in `kit/modes.tsx` (Grade, LightLeak, VHS, Flicker, AnamorphicFlare, ImpactFrame, ChapterCard, QuoteCard, KaraokeLine, MemeCaption, Wasted, JPText, LowerThird, ProgressBar, Ticker, BreakingBanner, StepBadge, HighlightBox, Callout, ZoomTo, StatCard, TimerDisplay, Hitmarker, KillFeed, ComboCounter, PriceTag, CTAButton, BeforeAfter, MapPin, DayCounter, PiP, CommentBubble, MangaPanels, EmojiPop). `examples/Modes.tsx` flies through all modes.
 
+## Music, SFX and what real edits do
+
+- **Music: search online first** — `references/music.md` (genre by topic: phonk for edits, slowed+reverb for sad, epic for cinematic…; WebSearch → shortlist → ask before every download → `yt-dlp` → `beats.py` → `musicFile`/`musicStart`). Generated `musicStyle` only as fallback. Command `/ae-motion:music-find`.
+- **SFX engine** — `references/sfx.md`, `tools/sfxgen.py` (8 categories, specs as cues, `layer:<transition>` stacks, packs, beat sync, AI via ElevenLabs), `tools/audit.py`. Commands `/ae-motion:sfx-find|sfx-generate|sfx-sync|sfx-layer|sfx-audit|sfx-pack`.
+- **Real edits** — `references/edits-breakdown.md` (28 TikTok edits measured): ~7 cuts per 10 s, half the cuts on audio transients, whiteout bloom flash ≈ 2 per 10 s, hit shakes, zoom punches, strobe flips, invert frames, halation. Kit: `kit/editfx.tsx` (BloomFlash, HitShake, ZoomPunch, InvertFlash, Strobe, Threshold, Mirror, PixelStreak, Halation, FlickerTitle, PercentCounter, BlackDip) + transitions `whiteout`, `blackDip`.
+
 ## Transitions
 
 Use `kit/cuts.tsx` — read `references/transitions.md` before placing any transition. Clean cut first; `transition(kind)` inside `<TransitionSeries>` (automatic overlap); `pickTransition()` for the choice; `SpeedRampCut`, `MorphText` + `GooDefs`; `tools/beats.py` for beat-synced cuts. Commands: `/ae-motion:transition`, `trans-clean`, `trans-dissolve`, `trans-wipe`, `trans-speedramp`, `trans-beat`, `trans-morph`, `trans-glitch`, `trans-random`. Demo: `examples/Transitions.tsx`.
@@ -98,6 +104,9 @@ Remotion renders HTML/CSS/SVG/WebGL. Real 3D scenes need `@remotion/three`; part
 
 ## References
 
+- `references/music.md` — finding and fitting real music.
+- `references/sfx.md` — sound design engine.
+- `references/edits-breakdown.md` — measured TikTok edits.
 - `references/transitions.md` — transition engine: categories, controls, picker, the 3 rules.
 - `references/director.md` — prompt → brief → beat list, defaults, theme by topic.
 - `references/editing.md` — rhythm, cut types, shot vocabulary, layout, sound design.
