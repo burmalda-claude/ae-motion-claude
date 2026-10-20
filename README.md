@@ -1,39 +1,41 @@
 # ae-motion
 
-Плагин для [Claude Code](https://claude.com/claude-code), который учит Claude делать видео «как в After Effects» — без самого After Effects. Видео собирается кодом через [Remotion](https://www.remotion.dev/) (React), а плагин даёт Claude вкус: шрифты, темы, приёмы анимации и аналоги эффектов AE.
+[Русский](README.ru.md) | **English**
 
-## Что внутри
+A [Claude Code](https://claude.com/claude-code) plugin that teaches Claude to make videos that look like After Effects work — without After Effects. Videos are built in code with [Remotion](https://www.remotion.dev/) (React); the plugin gives Claude the taste: fonts, themes, animation principles and code equivalents of AE effects.
 
-Один скилл `motion-design`, который Claude подгружает сам, когда вы просите сделать ролик, интро, титры, промо, reels и т.п.
+## What's inside
 
-| Файл | Что там |
+One skill, `motion-design`, which Claude loads on its own when you ask for a video, intro, titles, promo, reels and so on.
+
+| File | Contents |
 |---|---|
-| `SKILL.md` | Порядок работы (тема → раскадровка → сцены → полировка), правила «профессионального» движения, чеклист полировки, форматы видео |
-| `references/fonts.md` | ~16 пар Google Fonts по стилям, с пометкой о кириллице. Шрифты грузятся через `@remotion/google-fonts`, ничего скачивать не нужно |
-| `references/themes.md` | 10 готовых тем: Clean Tech, Neon Cyber, Bold Promo, Swiss, Luxury, Y2K, SaaS Gradient, Playful, Cinematic, Terminal — палитра + шрифты + характер движения |
-| `references/effects.md` | Эффекты AE → код Remotion: Easy Ease, spring-отскок, побуквенная анимация, motion blur, Glow, wiggle/тряска, параллакс и 3D, Trim Paths, маски и матты, зерно, виньетка, глитч, переходы, Lottie, синхронизация с музыкой |
+| `SKILL.md` | Workflow (theme → storyboard → scenes → polish), rules for professional-looking motion, polish checklist, video formats |
+| `references/fonts.md` | ~16 Google Fonts pairings by style, with Cyrillic support marked. Fonts load via `@remotion/google-fonts` — nothing to download |
+| `references/themes.md` | 10 ready themes: Clean Tech, Neon Cyber, Bold Promo, Swiss, Luxury, Y2K, SaaS Gradient, Playful, Cinematic, Terminal — palette + fonts + motion character |
+| `references/effects.md` | AE effects → Remotion code: Easy Ease, spring overshoot, per-letter animation, motion blur, Glow, wiggle/shake, parallax and 3D, Trim Paths, masks and mattes, grain, vignette, glitch, transitions, Lottie, beat sync |
 
-## Установка
+## Installation
 
 ```bash
 claude plugin marketplace add burmalda-claude/ae-motion-claude
 claude plugin install ae-motion@ae-motion-local
 ```
 
-Или из локальной папки: `claude plugin marketplace add ./ae-motion`.
+Or from a local folder: `claude plugin marketplace add ./ae-motion-claude`.
 
-Нужен проект Remotion (`npx create-video@latest`) и Node.js. Дополнительные пакеты (`@remotion/transitions`, `@remotion/motion-blur` и др.) Claude поставит сам по мере надобности.
+You need a Remotion project (`npx create-video@latest`) and Node.js. Extra packages (`@remotion/transitions`, `@remotion/motion-blur`, etc.) Claude installs as needed.
 
-## Пример
+## Example
 
-> Сделай промо-ролик на 15 секунд для Reels в стиле Neon Cyber: «Новая коллекция. Уже в продаже».
+> Make a 15-second Reels promo in the Neon Cyber style: "New collection. Available now."
 
-Claude выберет тему, распишет сцены, соберёт композицию с переходами, glow и зерном и отрендерит превью кадров.
+Claude picks the theme, writes the scene list, builds the composition with transitions, glow and grain, and renders preview stills.
 
-## Структура
+## Structure
 
 ```
-ae-motion/
+ae-motion-claude/
 ├── .claude-plugin/marketplace.json
 └── plugins/ae-motion/
     ├── .claude-plugin/plugin.json
@@ -42,6 +44,6 @@ ae-motion/
         └── references/{fonts,themes,effects}.md
 ```
 
-## Шрифты
+## Fonts
 
-Google Fonts (SIL Open Font License), в репозиторий не входят.
+Google Fonts (SIL Open Font License), not included in the repository.
