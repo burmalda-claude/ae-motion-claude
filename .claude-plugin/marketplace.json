@@ -1,0 +1,11 @@
+{
+  "name": "ae-motion-local",
+  "owner": { "name": "local" },
+  "plugins": [
+    {
+      "name": "ae-motion",
+      "source": "./plugins/ae-motion",
+      "description": "After Effects-style motion design in Remotion: fonts, themes, effects, transitions."
+    }
+  ]
+}
