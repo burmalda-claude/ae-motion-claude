@@ -51,3 +51,23 @@ Each theme = palette + fonts + motion character. Pick one per video. `bg` → `s
 - Palette: bg `#0D1117`, text `#C9D1D9`, accent `#3FB950`, accent2 `#58A6FF`
 - Fonts: JetBrains Mono 700 / 400
 - Motion: typewriter text (1 char per 1–2 frames) with blinking cursor, line-by-line reveals, subtle CRT flicker.
+
+## 11. Kinetic Red (tech trailer)
+- Palette: bg `#0B0B0D` / paper `#F1F0EE` / red `#FF2A3D` — shots flip hard between the three backgrounds. Text black on paper/red, white on dark.
+- Fonts: Archivo Black (huge, uppercase, -0.03em; for Russian text use Unbounded 900 or Dela Gothic One) + Oswald 700 (condensed lines) + Playfair Display italic (one soft accent line) + JetBrains Mono (UI/labels)
+- Motion: 4–24 frame shots, `SlamText`, `Stretch`, `WhipIn`, `Glitch` on cuts, camera hits, red `Orb` + `DotGrid` + `Bokeh` on dark shots, logo hit with `LightStreak` + `Sparks` + `Flash`, mock UI (prompt box, timeline, node graph, render bar). Reference: `examples/KineticPromo.tsx`.
+
+## 12. Brutalist Mono
+- Palette: bg `#FFFFFF`, text `#000000`, accent `#0047FF` (or none)
+- Fonts: Archivo Black / Space Grotesk 500 / JetBrains Mono labels
+- Motion: hard cuts only, no easing on position (linear snaps), oversized type cropped by the frame, grid lines, numbers and labels everywhere, invert (black bg) every 4th shot.
+
+## 13. Acid Hype
+- Palette: bg `#0A0A0A`, acid `#C6FF00`, hot pink `#FF2E93`, white
+- Fonts: Unbounded 900 / Dela Gothic One for Cyrillic punch / Inter 600
+- Motion: very fast (4–8 frame beats), strobing color flips acid↔black, `Stretch`, `EchoStack`, starbursts, stickers with thick outlines, heavy camera shake on drops.
+
+## 14. Anime Impact
+- Palette: bg `#FFFFFF` / `#111111`, red `#E60012`, yellow `#FFD500`
+- Fonts: Dela Gothic One (supports Cyrillic) / Russo One / Noto Sans JP for kana accents
+- Motion: speed lines (repeating-conic-gradient from center), impact frames (1–2 frames inverted colors), `Starburst` behind characters, `Shockwave`, zoom punches, freeze-frame + slow push.

@@ -29,6 +29,13 @@ Import path = font name without spaces (`"Space Grotesk"` → `@remotion/google-
 | Handwritten accent | Caveat 700 | — | yes |
 | Brush / marker accent | Permanent Marker | — | no (Cyr: Neucha, Marck Script) |
 | Code / terminal | JetBrains Mono 700 | JetBrains Mono 400 | yes |
+| Kinetic trailer (wide heavy) | Archivo Black | Oswald 700 / JetBrains Mono | Archivo Black no (Cyr: Dela Gothic One, Russo One, Unbounded) |
+| Heavy Japanese-style display | Dela Gothic One | Inter | yes |
+| Tech squared | Russo One | Exo 2 | yes |
+| Tall condensed headline | Big Shoulders Display 900 | Inter | no (Cyr: Oswald) |
+| Art-directed / fashion grotesk | Syne 800 | Inter | no (Cyr: Manrope) |
+| Wide techno | Michroma | Space Grotesk | no (Cyr: Unbounded) |
+| Soft italic accent line | Playfair Display italic | — | yes |
 
 ## Typography numbers that look good
 

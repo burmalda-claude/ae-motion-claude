@@ -2,22 +2,33 @@
 
 [Русский](README.ru.md) | **English**
 
-A [Claude Code](https://claude.com/claude-code) plugin that teaches Claude to make videos that look like After Effects work — without After Effects. Videos are built in code with [Remotion](https://www.remotion.dev/) (React); the plugin gives Claude the taste: fonts, themes, animation principles and code equivalents of AE effects.
+A [Claude Code](https://claude.com/claude-code) plugin that teaches Claude to make videos that look like After Effects work — without After Effects. Videos are built in code with [Remotion](https://www.remotion.dev/) (React); the plugin turns a one-line prompt into a finished, AE-quality video: Claude directs it (script, pacing, theme) and builds it from a ready component kit, themes, fonts and editing rules.
 
 ## What's inside
 
-One skill, `motion-design`, which Claude loads on its own when you ask for a video, intro, titles, promo, reels and so on.
+One skill, `motion-design`, which Claude loads on its own when you ask for a video, intro, titles, promo, reels and so on. You write one line — Claude acts as director and motion designer.
 
-| File | Contents |
+| Part | What it does |
 |---|---|
-| `SKILL.md` | Workflow (theme → storyboard → scenes → polish), rules for professional-looking motion, polish checklist, video formats |
-| `references/fonts.md` | ~16 Google Fonts pairings by style, with Cyrillic support marked. Fonts load via `@remotion/google-fonts` — nothing to download |
-| `references/themes.md` | 10 ready themes: Clean Tech, Neon Cyber, Bold Promo, Swiss, Luxury, Y2K, SaaS Gradient, Playful, Cinematic, Terminal — palette + fonts + motion character |
-| `references/effects.md` | AE effects → Remotion code: Easy Ease, spring overshoot, per-letter animation, motion blur, Glow, wiggle/shake, parallax and 3D, Trim Paths, masks and mattes, grain, vignette, glitch, transitions, Lottie, beat sync |
+| **Director mode** (`references/director.md`) | Turns a short prompt into a full brief without a questionnaire: format, length, theme by topic, language, script as 1–4 word beats (hook → setup → reveal → proof → climax → logo/CTA), then builds |
+| **Component kit** (`kit/`) | ~45 ready Remotion components Claude copies into your project: kinetic text, effects, camera, transitions, mock UI |
+| **Reference video** (`examples/KineticPromo.tsx`) | A full 15-shot kinetic promo in the red/black/white trailer style — the quality bar |
+| **Editing grammar** (`references/editing.md`) | Cut rhythm on a beat grid, 8 cut types, 14 shot types, layout and accent rules, sound design |
+| **Themes / fonts / effects** | 14 themes, ~23 font pairings, raw AE → Remotion recipes for anything outside the kit |
+
+### Kit components
+
+| Group | Components |
+|---|---|
+| Text | `SlamText` (slam-in), `WhipIn` (slide + directional blur), `Letters` (rise / pop / drop / blur), `Words` (accent words), `MaskReveal`, `Typewriter` (highlighted tokens), `Counter`, `Outline`, `Extrude` (3D text), `EchoStack`, `Stretch`, `Glitch` (RGB + slices), `Highlight`, `Underline`, `CheckerText`, `punch()` |
+| Effects | `Smear` (directional motion blur), `Glow`, `Grain`, `Vignette`, `Scanlines`, `DotGrid`, `Orb`, `Bokeh`, `LightStreak`, `Sparks`, `Starburst`, `Shockwave`, `Cube3D`, `Viewfinder`, `HudRing`, `Letterbox`, `Flash` |
+| Camera | `Camera` (push-in, drift, impact shakes, roll), `Parallax`, `Tilt3D` |
+| Transitions | `whip()`, `zoomThrough()`, `slices()` + official fade / slide / wipe / flip / clock wipe |
+| Mock UI | `PromptBox` (types itself), `Timeline` (AE-like keyframes), `NodeGraph` (glowing cables), `RenderBar`, `PlayerMock`, `Cursor` |
 
 ## Styles (themes)
 
-Name a theme in your request — Claude uses its palette, fonts and motion character for the whole video.
+Name a theme in your request (or don't — Claude picks one by topic) — Claude uses its palette, fonts and motion character for the whole video.
 
 | Theme | Good for | Fonts | Palette | Motion |
 |---|---|---|---|---|
@@ -31,6 +42,10 @@ Name a theme in your request — Claude uses its palette, fonts and motion chara
 | **Playful / Kids** | social, kids, light content | Nunito + Rubik | cream, bright red/teal/yellow/purple | squash & stretch, big overshoot, pop-ins, stickers |
 | **Cinematic / Documentary** | documentaries, stories, trailers | Playfair Display + Lora | black, off-white, ochre | Ken Burns on photos, 2.39:1 letterbox, fades through black, heavy grain |
 | **Terminal / Hacker** | dev, code, IT tutorials | JetBrains Mono | GitHub dark, green, blue | typewriter with cursor, line-by-line reveals, CRT flicker |
+| **Kinetic Red** | AI/tech launches, trailers | Archivo Black + Oswald + Playfair italic | black / paper / red `#FF2A3D`, hard flips | 4–24 frame shots, slams, whips, glitch, logo hit with streak + sparks, mock UI |
+| **Brutalist Mono** | design studios, portfolios | Archivo Black + Space Grotesk | white, black, blue | hard snaps, oversized cropped type, grid and labels |
+| **Acid Hype** | drops, music, streetwear | Unbounded + Dela Gothic One | black, acid green, hot pink | strobing color flips, stretch, echo stacks, heavy shake |
+| **Anime Impact** | gaming, anime edits | Dela Gothic One + Russo One | white/black, red, yellow | speed lines, impact frames, starbursts, zoom punches |
 
 ## Fonts by style
 
@@ -53,6 +68,13 @@ All Google Fonts, loaded automatically. ✅ = Cyrillic supported.
 | Handwritten accent | Caveat ✅ | — |
 | Marker / brush | Permanent Marker (Cyrillic: Neucha, Marck Script) | — |
 | Code / terminal | JetBrains Mono ✅ | JetBrains Mono ✅ |
+| Kinetic trailer | Archivo Black (Cyrillic: Dela Gothic One, Unbounded) | Oswald ✅ / JetBrains Mono ✅ |
+| Heavy display | Dela Gothic One ✅ | Inter ✅ |
+| Tech squared | Russo One ✅ | Exo 2 ✅ |
+| Tall condensed | Big Shoulders Display (Cyrillic: Oswald) | Inter ✅ |
+| Fashion grotesk | Syne (Cyrillic: Manrope) | Inter ✅ |
+| Wide techno | Michroma (Cyrillic: Unbounded) | Space Grotesk |
+| Soft italic accent | Playfair Display italic ✅ | — |
 
 ## Effects
 
@@ -108,7 +130,9 @@ ae-motion-claude/
     ├── .claude-plugin/plugin.json
     └── skills/motion-design/
         ├── SKILL.md
-        └── references/{fonts,themes,effects}.md
+        ├── kit/            ← easing, text, fx, camera, transitions, ui (+ index.ts)
+        ├── examples/KineticPromo.tsx
+        └── references/{director,editing,themes,fonts,effects}.md
 ```
 
 ## Fonts
