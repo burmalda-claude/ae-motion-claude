@@ -23,7 +23,8 @@ Cue positions (frames, relative to the shot): 12 | "w3" (word 3 starts) | "w3+2"
 SFX that swell into a moment (riser, riser_short, swish_in, reverse_swell) END on their cue.
 Music modes per beat (persist until changed): intro | drop | build | break | ui | stop.
 musicStyle: edm | phonk | lofi | ambient | cinematic | corporate | jcore. Top-level "music": false = no bed (ASMR, your own track).
-Real music (preferred for edits, references/music.md): "musicFile": "public/music/x.mp3", "musicStart": 12.3 (seconds).
+Real music (preferred for edits, references/music.md): "musicFile": "public/music/x.mp3", "musicStart": 12.3 (seconds),
+"musicEdits": [{"type": "tapestop", "at": 4.0, "len": 0.35, "until": 4.5}, {"type": "mute", "from": 12.0, "to": 12.4}, {"type": "duck", "from": 1, "to": 4, "gain": 0.4}] (edit seconds).
 "sfxTrack": [[spec, absolute_frame, vol], ...] — global SFX lane (tools/sfxgen.py sync fills it from beats.json).
 SFX cues accept built-in names, generator specs ("whoosh:len=12f,dir=LR,tone=dark") and layer stacks ("layer:whip").
 Mix: "sfxDuck": dB SFX are lowered under speech (6), "sfxPresenceDuck": extra dB cut of SFX at 1–4 kHz under speech (9), "sfxVary": ± semitones random per placement (0), "lufs": -14 (social) | -23 (TV).
@@ -229,6 +230,27 @@ def main():
         fo = int(1.0 * SR)
         mus[-fo:] *= np.linspace(1, 0, fo)[:, None]
         mus = S.norm(mus, 0.8)
+        # automation on the real track (edit seconds): tape stop, mute (breath before a drop), duck
+        for ev in cfg.get("musicEdits", []):
+            i0 = int(ev.get("at", ev.get("from", 0)) * SR)
+            if ev["type"] == "tapestop":  # playback slows to 0 over `len` s (S-curve), then silence until `until`
+                L = int(ev.get("len", 0.4) * SR)
+                u = int(ev.get("until", ev["at"] + ev.get("len", 0.4)) * SR)
+                seg = mus[i0 : i0 + 4 * L].copy()
+                t = np.arange(L) / L
+                speed = 1 - (3 * t ** 2 - 2 * t ** 3)  # smooth 1 -> 0
+                pos = np.cumsum(speed)
+                stopped = np.stack([np.interp(pos, np.arange(len(seg)), seg[:, c]) for c in range(2)], axis=1) * np.linspace(1, 0.2, L)[:, None]
+                mus[i0 : i0 + L] = stopped[: len(mus) - i0]
+                mus[i0 + L : u] = 0
+            elif ev["type"] == "mute":
+                u = int(ev["to"] * SR)
+                fd = int(ev.get("fade", 0.01) * SR)
+                mus[i0:u] = 0
+                if fd and i0 - fd > 0:
+                    mus[i0 - fd : i0] *= np.linspace(1, 0, fd)[:, None]
+            elif ev["type"] == "duck":
+                mus[i0 : int(ev["to"] * SR)] *= ev.get("gain", 0.3)
     else:
         sections, cur = [], None
         for b, sh in zip(beats, shots):

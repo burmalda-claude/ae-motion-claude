@@ -254,6 +254,162 @@ const BlackDipComp: React.FC<P<Record<string, never>>> = ({ children, presentati
   return show ? <AbsoluteFill>{children}</AbsoluteFill> : null;
 };
 
+// ---------------------------------------------------------------- edit staples II (tools/transscan.py over the 28 reference edits)
+/** Exposure settle: A blows out in ~1 frame, (optional pure-color hold), B starts overexposed + soft and settles. Measured: up 1 f, down 4–8 f. */
+const ExposureComp: React.FC<P<{ color?: string; hold?: number }>> = ({ children, presentationDirection, presentationProgress: p, passedProps }) => {
+  const c = passedProps.color ?? "#fff";
+  const up = 0.12;
+  const hold = passedProps.hold ?? 0;
+  if (!enter(presentationDirection)) return p < up ? <AbsoluteFill style={{ filter: `brightness(${1 + (p / up) * 3})` }}>{children}</AbsoluteFill> : null;
+  if (p < up) return null;
+  if (p < up + hold) return <AbsoluteFill style={{ background: c }} />;
+  const w = 1 - EASE.out((p - up - hold) / (1 - up - hold));
+  return (
+    <AbsoluteFill>
+      <AbsoluteFill style={{ filter: `brightness(${1 + w * 2.2}) contrast(${1 - w * 0.4}) blur(${w * 10}px)` }}>{children}</AbsoluteFill>
+      <AbsoluteFill style={{ background: c, opacity: w * 0.85 }} />
+    </AbsoluteFill>
+  );
+};
+
+/** Frame flip: hard cut in the middle; the 1–2 frames around it are negative (invert) or 1-bit b/w (threshold), smeared. */
+const FrameFlipComp: React.FC<P<{ mode?: "invert" | "threshold"; width?: number }>> = ({ children, presentationDirection, presentationProgress: p, passedProps }) => {
+  if (enter(presentationDirection) ? p < 0.5 : p >= 0.5) return null;
+  const on = Math.abs(p - 0.5) < (passedProps.width ?? 0.45); // p is eased: a wide window still means only the frames next to the cut
+  const fx = passedProps.mode === "threshold" ? "grayscale(1) contrast(9) brightness(1.15)" : "invert(1) contrast(1.3) blur(6px)";
+  return <AbsoluteFill style={on ? { filter: fx, transform: "scale(1.06)" } : undefined}>{children}</AbsoluteFill>;
+};
+
+/** Shrink & pop: A shrinks to a point over `bg` (ease-in), B pops in oversized with glow and settles. */
+const ShrinkPopComp: React.FC<P<{ bg?: string }>> = ({ children, presentationDirection, presentationProgress: p, passedProps }) => {
+  const mid = 0.6;
+  if (!enter(presentationDirection)) {
+    if (p >= mid) return null;
+    const e = EASE.inOut(p / mid);
+    return (
+      <AbsoluteFill style={{ background: passedProps.bg ?? "#000" }}>
+        <AbsoluteFill style={{ transform: `scale(${1 - 0.88 * e})`, filter: `blur(${e * 3}px)` }}>{children}</AbsoluteFill>
+      </AbsoluteFill>
+    );
+  }
+  if (p < mid) return null;
+  const q = (p - mid) / (1 - mid);
+  return <AbsoluteFill style={{ transform: `scale(${mix(1.35, 1, EASE.out(q))})`, filter: `blur(${(1 - q) * 8}px) brightness(${1 + (1 - q) * 0.8})` }}>{children}</AbsoluteFill>;
+};
+
+/** Punch-in: hard cut first, B lands at 130–150 % with a radial zoom blur and settles (the most common edit cut). */
+const PunchInComp: React.FC<P<{ peak?: number }>> = ({ children, presentationDirection, presentationProgress: p, passedProps }) => {
+  if (!enter(presentationDirection)) return null;
+  const k = 1 - p;
+  const s = 1 + ((passedProps.peak ?? 1.4) - 1) * k;
+  return (
+    <AbsoluteFill>
+      <AbsoluteFill style={{ transform: `scale(${s})`, filter: `blur(${k * 4}px) brightness(${1 + k * 0.4})` }}>{children}</AbsoluteFill>
+      {k > 0.05 &&
+        [1.06, 1.13].map((z, i) => (
+          <AbsoluteFill key={i} style={{ transform: `scale(${s * (1 + (z - 1) * k * 2)})`, opacity: (0.35 - i * 0.12) * k, filter: `blur(${6 + i * 6}px)` }}>
+            {children}
+          </AbsoluteFill>
+        ))}
+    </AbsoluteFill>
+  );
+};
+
+/** Push: B pushes A out of frame (both move), motion blur along the axis. */
+const PushComp: React.FC<P<{ direction?: "up" | "down" | "left" | "right" }>> = ({ children, presentationDirection, presentationProgress: p, passedProps }) => {
+  const d = passedProps.direction ?? "up";
+  const [ax, sg] = ({ up: ["Y", -1], down: ["Y", 1], left: ["X", -1], right: ["X", 1] } as const)[d];
+  const off = enter(presentationDirection) ? -sg * (1 - p) * 100 : sg * p * 100;
+  const v = Math.sin(p * Math.PI) * 50;
+  return (
+    <AbsoluteFill style={{ transform: `translate${ax}(${-off}%)` }}>
+      <Smear {...(ax === "X" ? { x: v } : { y: v })} style={{ width: "100%", height: "100%" }}>
+        <AbsoluteFill>{children}</AbsoluteFill>
+      </Smear>
+    </AbsoluteFill>
+  );
+};
+
+/** SVG mosaic: blocks of `size` px (1 = off). */
+const Pixelate: React.FC<{ size: number; children: React.ReactNode }> = ({ size, children }) => {
+  const s = Math.round(size);
+  if (s < 2) return <AbsoluteFill>{children}</AbsoluteFill>;
+  const h = Math.floor(s / 2);
+  const id = `aem-px-${s}`; // same size → identical filter, a duplicate id is harmless
+  return (
+    <AbsoluteFill>
+      <svg width={0} height={0} style={{ position: "absolute" }}>
+        <filter id={id} x="0" y="0" width="100%" height="100%">
+          <feFlood x={h} y={h} width={1} height={1} />
+          <feComposite width={s} height={s} />
+          <feTile result="a" />
+          <feComposite in="SourceGraphic" in2="a" operator="in" />
+          <feMorphology operator="dilate" radius={h} />
+        </filter>
+      </svg>
+      <AbsoluteFill style={{ filter: `url(#${id})` }}>{children}</AbsoluteFill>
+    </AbsoluteFill>
+  );
+};
+/** Pixelate: A breaks into big blocks, B resolves out of them (optionally out of white, as in the edits). */
+const PixelateComp: React.FC<P<{ max?: number; white?: boolean }>> = ({ children, presentationDirection, presentationProgress: p, passedProps }) => {
+  const max = passedProps.max ?? 56;
+  const b = enter(presentationDirection);
+  if (b ? p < 0.5 : p >= 0.5) return null;
+  const q = b ? 1 - (p - 0.5) * 2 : p * 2; // 1 = most blocky
+  return (
+    <AbsoluteFill style={passedProps.white ? { filter: `brightness(${1 + q * 2})` } : undefined}>
+      <Pixelate size={1 + (max - 1) * q}>{children}</Pixelate>
+    </AbsoluteFill>
+  );
+};
+
+/** TV off/on: A collapses into a bright horizontal line on black, B opens out of the line. */
+const TvComp: React.FC<P<Record<string, never>>> = ({ children, presentationDirection, presentationProgress: p }) => {
+  const b = enter(presentationDirection);
+  if (b ? p < 0.5 : p >= 0.5) return null;
+  const q = b ? 1 - (p - 0.5) * 2 : p * 2; // 1 = collapsed
+  const sy = mix(1, 0.008, b ? EASE.out(q) : EASE.in(q));
+  const sx = q > 0.75 ? mix(1, 0.05, (q - 0.75) / 0.25) : 1;
+  return (
+    <AbsoluteFill style={{ background: "#000" }}>
+      <AbsoluteFill style={{ transform: `scale(${sx}, ${sy})`, filter: `brightness(${1 + q * 4}) contrast(${1 + q})` }}>{children}</AbsoluteFill>
+      <AbsoluteFill style={{ background: "repeating-linear-gradient(0deg, rgba(0,0,0,0.4) 0 2px, transparent 2px 5px)", opacity: q }} />
+    </AbsoluteFill>
+  );
+};
+
+/** Hue sweep: the palette rotates through the spectrum while B dissolves in. */
+const HueComp: React.FC<P<{ deg?: number }>> = ({ children, presentationDirection, presentationProgress: p, passedProps }) => {
+  const deg = passedProps.deg ?? 160;
+  return enter(presentationDirection) ? (
+    <AbsoluteFill style={{ opacity: p, filter: `hue-rotate(${(p - 1) * deg}deg) saturate(${1 + (1 - p) * 0.8})` }}>{children}</AbsoluteFill>
+  ) : (
+    <AbsoluteFill style={{ filter: `hue-rotate(${p * deg}deg) saturate(${1 + p * 0.8})` }}>{children}</AbsoluteFill>
+  );
+};
+
+/** Stutter: the edit flickers A/B/A/B every 2–3 frames before landing on B. */
+const StutterComp: React.FC<P<{ flips?: number }>> = ({ children, presentationDirection, presentationProgress: p, passedProps }) => {
+  const n = passedProps.flips ?? 4;
+  const seg = Math.min(n, Math.floor(p * (n + 1)));
+  const showB = seg % 2 === 1 || seg === n;
+  return enter(presentationDirection) === showB ? <AbsoluteFill>{children}</AbsoluteFill> : null;
+};
+
+/** Card expand: B appears as a rounded card in the middle and grows to full frame; A recedes and darkens. */
+const CardComp: React.FC<P<{ inset?: number; edge?: string }>> = ({ children, presentationDirection, presentationProgress: p, passedProps }) => {
+  if (!enter(presentationDirection)) return <AbsoluteFill style={{ transform: `scale(${1 - 0.06 * p})`, filter: `brightness(${1 - 0.5 * p}) blur(${p * 4}px)` }}>{children}</AbsoluteFill>;
+  const i = (passedProps.inset ?? 18) * (1 - p);
+  const r = 60 * (1 - p);
+  return (
+    <AbsoluteFill style={{ clipPath: `inset(${i}% ${i}% round ${r}px)`, opacity: Math.min(1, p * 4) }}>
+      <AbsoluteFill style={{ transform: `scale(${1 + 0.15 * (1 - p)})` }}>{children}</AbsoluteFill>
+      {p < 0.95 && <AbsoluteFill style={{ boxShadow: `inset 0 0 0 4px ${passedProps.edge ?? "#fff"}`, borderRadius: r, margin: `${i}%`, opacity: 1 - p }} />}
+    </AbsoluteFill>
+  );
+};
+
 // ---------------------------------------------------------------- registry
 export type CutKind =
   | "cut"
@@ -274,9 +430,20 @@ export type CutKind =
   | "whip"
   | "zoom"
   | "whiteout"
-  | "blackDip";
+  | "blackDip"
+  | "exposure"
+  | "invertCut"
+  | "threshold"
+  | "shrinkPop"
+  | "punchIn"
+  | "push"
+  | "pixelate"
+  | "tvOff"
+  | "hueShift"
+  | "stutter"
+  | "card";
 
-export const CUT_CATEGORY: Record<CutKind, "cut" | "dissolve" | "wipe" | "speed" | "atmospheric" | "trend"> = {
+export const CUT_CATEGORY: Record<CutKind, "cut" | "dissolve" | "wipe" | "speed" | "atmospheric" | "trend" | "edit"> = {
   cut: "cut",
   dissolve: "dissolve",
   blurDissolve: "dissolve",
@@ -296,6 +463,17 @@ export const CUT_CATEGORY: Record<CutKind, "cut" | "dissolve" | "wipe" | "speed"
   zoom: "speed",
   whiteout: "atmospheric",
   blackDip: "cut",
+  exposure: "edit",
+  invertCut: "edit",
+  threshold: "edit",
+  shrinkPop: "edit",
+  punchIn: "edit",
+  push: "speed",
+  pixelate: "edit",
+  tvOff: "edit",
+  hueShift: "edit",
+  stutter: "edit",
+  card: "edit",
 };
 
 /** Default frames: 6–16 for "invisible" transitions; longer only for drama. */
@@ -319,10 +497,21 @@ export const CUT_FRAMES: Record<CutKind, number> = {
   zoom: 10,
   whiteout: 8,
   blackDip: 8,
+  exposure: 8,
+  invertCut: 4,
+  threshold: 3,
+  shrinkPop: 8,
+  punchIn: 6,
+  push: 8,
+  pixelate: 10,
+  tvOff: 10,
+  hueShift: 8,
+  stutter: 10,
+  card: 10,
 };
-const DEFAULT_EASE: Partial<Record<CutKind, CutEaseName>> = { whip: "sCurve", zoom: "sCurve", depth: "sCurve", split: "in", liquid: "ease", glitch: "ease", phonk: "ease" };
+const DEFAULT_EASE: Partial<Record<CutKind, CutEaseName>> = { whip: "sCurve", zoom: "sCurve", depth: "sCurve", split: "in", liquid: "ease", glitch: "ease", phonk: "ease", push: "sCurve", card: "out" };
 /** Moving transitions get motion blur by default (whip, zoom, split, depth already include it). */
-export const CUT_MOTION_BLUR: CutKind[] = ["whip", "zoom", "split", "depth", "matteWipe", "matchReveal"];
+export const CUT_MOTION_BLUR: CutKind[] = ["whip", "zoom", "split", "depth", "matteWipe", "matchReveal", "push", "punchIn"];
 
 export type CutOptions = {
   frames?: number;
@@ -358,6 +547,17 @@ export function transition(kind: CutKind, opts: CutOptions = {}): { presentation
     zoom: zoomBlurP(),
     whiteout: { component: WhiteoutComp, props: { ...pr } },
     blackDip: { component: BlackDipComp, props: {} },
+    exposure: { component: ExposureComp, props: { ...pr } },
+    invertCut: { component: FrameFlipComp, props: { mode: "invert", ...pr } },
+    threshold: { component: FrameFlipComp, props: { mode: "threshold", ...pr } },
+    shrinkPop: { component: ShrinkPopComp, props: { ...pr } },
+    punchIn: { component: PunchInComp, props: { ...pr } },
+    push: { component: PushComp, props: { ...pr } },
+    pixelate: { component: PixelateComp, props: { ...pr } },
+    tvOff: { component: TvComp, props: {} },
+    hueShift: { component: HueComp, props: { ...pr } },
+    stutter: { component: StutterComp, props: { ...pr } },
+    card: { component: CardComp, props: { ...pr } },
   };
   return { presentation: comp[kind], timing: linearTiming({ durationInFrames: frames, easing: ease }), frames };
 }
@@ -375,7 +575,10 @@ export function pickTransition(c: CutContext): { kind: CutKind; frames: number; 
   if (c.from === c.to && c.to !== "high") return f("cut", "same energy and rhythm — a clean cut is invisible");
   if (c.from === "high" && c.to === "low") return f("lightLeak", "energy drops — soften with light", 16);
   if (c.from !== "high" && c.to === "high") return bpm >= 120 ? f("zoom", "energy jumps — punch into the drop on the beat", 8) : f("whip", "energy rises — whip into it", 8);
-  if (c.from === "high" && c.to === "high") return c.onBeat ? f("cut", "on the beat the cut itself is the hit") : bpm >= 130 ? f("phonk", "high-energy edit at fast tempo — short glitch hit on the beat", 6) : f("whiteout", "edit staple: bloom whiteout on the hit", 8);
+  if (c.from === "high" && c.to === "high") {
+    if (c.onBeat) return f("punchIn", "on the beat: hard cut + B lands oversized and settles — the most common cut in real edits");
+    return bpm >= 130 ? f("phonk", "high-energy edit at fast tempo — short glitch hit", 6) : f("exposure", "edit staple: blow out in 1 frame, B settles out of the overexposure");
+  }
   if (c.from === "mid" && c.to === "low") return f("scaleDissolve", "gentle step down — dissolve with a 3% push", 10);
   return f("shapeWipe", "different scenes, same energy — a clean shape wipe with an edge", 12);
 }

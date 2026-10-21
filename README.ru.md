@@ -92,7 +92,7 @@
 Референсы: DJordanMedia · Versely · SONNISS · AEscripts AI Scorpion SFX.
 
 ### Что делают настоящие эдиты
-`references/edits-breakdown.md`: 28 TikTok-эдитов, разобранных по кадрам, — ~7 склеек на 10 с, половина на звуковых ударах, ~2 вспышки в белое на 10 с, тряска на ударах, зум-панчи, стробоскоп, ореол-свечение; музыка 108–144 BPM, очень много саба. Это стало `kit/editfx.tsx` и переходами `whiteout` / `blackDip`.
+`references/edits-breakdown.md`: 28 TikTok-эдитов, разобранных по кадрам, — ~7 склеек на 10 с, половина на звуковых ударах, ~2 вспышки в белое на 10 с, тряска на ударах, зум-панчи, стробоскоп, ореол-свечение; музыка 108–144 BPM, очень много саба. Это стало `kit/editfx.tsx` и переходами `whiteout` / `blackDip`. Второй проход, `tools/transscan.py`, замерил все 1 148 склеек и вспышек в этих эдитах (вспышка нарастает 1 кадр и спадает 4, чёрное держится 3 кадра, размытие 6, растворения всего 4 кадра, событие каждые 8 кадров) и добавил в движок 11 приёмов: `punchIn`, `exposure`, `invertCut`, `threshold`, `shrinkPop`, `push`, `pixelate`, `tvOff`, `hueShift`, `stutter`, `card` (демо: `examples/EditCuts.tsx`, 9:16).
 
 ## Переходы
 
@@ -109,6 +109,8 @@
 | `/ae-motion:trans-morph` | Trend: morph text | 12–16 | S-curve | swish | letters melt into letters (MorphText) + liquid |
 | `/ae-motion:trans-glitch` | Atmospheric / phonk | 4–8 | Ease | glitch + impact on the hit | RGB split + slices + VHS + 1-frame invert |
 | `/ae-motion:trans-random` | smart | per kind | per kind | BPM + energy per beat | chooses by shot energy & BPM, never the same twice in a row |
+| `/ae-motion:trans-edit` | Приёмы эдитов (замерены) | 3–10 | по типу | удар на кадре склейки | влёт с зумом, вспышка-пересвет, негатив / ч/б кадры, сжатие-выпрыгивание, выталкивание, пикселизация, «выключение ТВ», сдвиг оттенка, мерцание, карточка |
+| `/ae-motion:trans-learn` | Анализ | — | — | — | сканирует ваши референсы (`tools/transscan.py`): каждая склейка замерена, ленты кадров, сопоставление с типами переходов |
 
 ### Почему ваши переходы выглядят дёшево
 1. **Overlap.** Переходу нужны кадры обоих шотов; без перекрытия он мигает или замирает. Движок перекрывает сам — планируйте длину шотов с учётом этого.

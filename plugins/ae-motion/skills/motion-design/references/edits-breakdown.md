@@ -30,6 +30,11 @@ Source: 28 edits from the user's reference folder (anime AMVs, Rick & Morty edit
 12. **Character glow / halation** — subjects get a white/colored outer glow, highlights bloom. → `<Halation>`, `Glow`.
 13. Overlays: progress `%` counter, title letters flickering on one by one (`S P A C E`), small watermark/credit text.
 
+## Transition scan (tools/transscan.py, 1 148 events)
+Per-edit usage (how many of 28 edits use it at least once): shake on the hit 19 · bloom/white flash 19 · zoom-in with blur 19 · zoom-out 22 · blur on the cut 25 · hard cut 22 · black frames 14 · horizontal whip 14 · push/slide 11 · dissolve 11 · vertical whip 10 · RGB split 9 · invert 8 · strobe 6.
+Timings (median): flash up **1 f**, down **4 f** · black **3 f** · blur **6 f** · dissolve **4 f** · RGB 2 px for 4 f · zoom 7 f · an event every 8 f.
+Patterns seen in the review strips and now in `kit/cuts.tsx`: exposure settle (new shot starts blown out), solid color flash frames, invert / 1-bit frames on the cut, shrink-to-point → pop, punch-in with radial blur, vertical push, pixel-mosaic resolve out of white, TV line collapse, hue sweep, A/B stutter, card expand. Also seen, covered by existing components: polarity-flipping word cuts (black ↔ white bg per word → `InvertFlash` + lyric words), strobe red/white with a 1-bit subject (`Strobe` + `Threshold`), kaleidoscope tiles (`Mirror`), percentage counters (`PercentCounter`).
+
 ## Look
 - Heavy contrast + saturation, crushed blacks, blown highlights, bloom on everything bright.
 - Grain is rare; sharpness + glow is common. Color: either hyper-saturated (anime) or 2-tone (red/white, b/w + one color).

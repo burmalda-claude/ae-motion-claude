@@ -92,7 +92,7 @@ See `references/sfx.md` → table of every suggested source with license and com
 References: DJordanMedia · Versely · SONNISS · AEscripts AI Scorpion SFX.
 
 ### What real edits do
-`references/edits-breakdown.md`: 28 TikTok edits measured frame by frame — ~7 cuts per 10 s, half of them on audio transients, ~2 whiteout flashes per 10 s, hit shakes, zoom punches, strobe flips, halation; music 108–144 BPM, very sub-heavy. These became `kit/editfx.tsx` and the `whiteout` / `blackDip` transitions.
+`references/edits-breakdown.md`: 28 TikTok edits measured frame by frame — ~7 cuts per 10 s, half of them on audio transients, ~2 whiteout flashes per 10 s, hit shakes, zoom punches, strobe flips, halation; music 108–144 BPM, very sub-heavy. These became `kit/editfx.tsx` and the `whiteout` / `blackDip` transitions. A second pass, `tools/transscan.py`, measured all 1 148 cuts and flashes in those edits (flash up 1 f / down 4 f, black 3 f, blur 6 f, dissolves only 4 f, an event every 8 f) and added 11 edit staples to the engine: `punchIn`, `exposure`, `invertCut`, `threshold`, `shrinkPop`, `push`, `pixelate`, `tvOff`, `hueShift`, `stutter`, `card` (demo: `examples/EditCuts.tsx`, 9:16).
 
 ## Transitions
 
@@ -109,6 +109,8 @@ A separate engine (`kit/cuts.tsx`, rules in `references/transitions.md`): a tran
 | `/ae-motion:trans-morph` | Trend: morph text | 12–16 | S-curve | swish | letters melt into letters (MorphText) + liquid |
 | `/ae-motion:trans-glitch` | Atmospheric / phonk | 4–8 | Ease | glitch + impact on the hit | RGB split + slices + VHS + 1-frame invert |
 | `/ae-motion:trans-random` | smart | per kind | per kind | BPM + energy per beat | chooses by shot energy & BPM, never the same twice in a row |
+| `/ae-motion:trans-edit` | Edit staples (measured) | 3–10 | per kind | impact on the cut frame | punch-in, exposure flash, invert / 1-bit frames, shrink-pop, push, pixelate, TV-off, hue sweep, stutter, card |
+| `/ae-motion:trans-learn` | Analysis | — | — | — | scan your reference edits (`tools/transscan.py`): every cut measured, review strips, mapped to kinds |
 
 ### Why your transitions look cheap
 1. **Overlap.** A transition needs frames from both shots; without overlap it flashes or freezes. The engine overlaps automatically — plan shot lengths with it in mind.
