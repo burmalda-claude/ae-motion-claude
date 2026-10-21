@@ -5,7 +5,9 @@ argument-hint: "<which cuts / style, optional>"
 
 Cut like the reference edits (`references/transitions.md` → "Edit staples"): most cuts are **hard cuts on a hit** plus one short event on the new shot. Default `punchIn` (6 f) on hits, `exposure` (8 f, 1 f up / 4 f down) on big hits and section changes, `blackDip` (3 black frames) before the drop. Accents, never twice in a row: `invertCut` / `threshold` (phonk, horror), `stutter` (build-ups), `shrinkPop` / `hueShift` (character edits), `push` (vertical feeds), `pixelate` / `card` (meme edits), `tvOff` (endings). Place cuts on `beats.json` `hits`, add `HitShake` on the same frames, put the SFX cue on the cut frame.
 
-Use the transition engine of the `motion-design` skill (`kit/cuts.tsx`, rules in `references/transitions.md`). Request: $ARGUMENTS
+Use the transition engine of the `motion-design` skill (`kit/cuts.tsx`, rules in `references/transitions.md`). For edits, start from `python tools/transplan.py src/beats.json --start <s> --end <s> --drop <s>` (measured grammar: cuts on onsets, bursts of 2–5 of one kind, black + flash on the drop) and wrap each shot in `<EditCam kind={shot.cam}>`.
+
+Request: $ARGUMENTS
 
 Rules that always apply:
 - Offer the **clean cut first**. Add an effect only when it is motivated (time passes, energy changes, shapes match, beat hit).

@@ -5,7 +5,9 @@ argument-hint: "<which cut / shots, optional>"
 
 1) Run `python tools/beats.py <audio> .` (or use the music bpm from script.json) → `src/beats.json`. 2) Put scene changes on `downbeats` (bar starts), hard hits (phonk/glitch/flash) on `hits`, and center each transition on the beat (start = beat − frames/2). 3) Choose kinds with `pickTransition({..., onBeat: true})`. 4) Add SFX cues on the same frames.
 
-Use the transition engine of the `motion-design` skill (`kit/cuts.tsx`, rules in `references/transitions.md`). Request: $ARGUMENTS
+Use the transition engine of the `motion-design` skill (`kit/cuts.tsx`, rules in `references/transitions.md`). For edits, start from `python tools/transplan.py src/beats.json --start <s> --end <s> --drop <s>` (measured grammar: cuts on onsets, bursts of 2–5 of one kind, black + flash on the drop) and wrap each shot in `<EditCam kind={shot.cam}>`.
+
+Request: $ARGUMENTS
 
 Rules that always apply:
 - Offer the **clean cut first**. Add an effect only when it is motivated (time passes, energy changes, shapes match, beat hit).

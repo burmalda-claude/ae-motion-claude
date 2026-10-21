@@ -59,11 +59,25 @@ Real TikTok edits barely use "transitions" in the template sense: most cuts are 
 
 Rhythm of the scanned edits: an event every **8 frames** on average (bursts of 2–4 f on drops), blur on **6 f** around cuts, RGB split ~2 px for ~4 f, shake on the hit in 19/28 edits. Never stack two "events" on one cut; a hard cut + `HitShake` + `punchIn` is the full edit vocabulary for most cuts.
 
+## Measured grammar of edit transitions (deep pass: 840 events, 27 edits, camera tracked per frame, audio from the video)
+| What | Measured | In the kit |
+|---|---|---|
+| Sync | cut-to-onset histogram peaks at **0 f**; 50 % within ±2 f, slightly more early than late | `tools/transplan.py` snaps every cut to hits / beats / 8ths |
+| Bursts | the same kind repeats **2–5×** (median 2, p90 5) on consecutive hits **4 f** apart; the kind changes at a phrase boundary after a **~14 f** gap | `transplan.py` keeps a kind for 2–5 events, switches on a downbeat |
+| Quiet vs loud | quiet parts: hard cuts, shots ≥ 12 f; loud parts: an event every 4–8 f (flash 30 %, zoom 35 %, blur 18 %, whip 10 %, rgb/invert rare) | `transplan.py` reads `beats.json` energy |
+| Flash | starts on the **old** shot 2 f before the cut, peak on −1 and 0, tail 74 → 54 → 45 → 33 → 27 → 22 → 17 → 10 % | `BloomFlash` default curve, `flashCurve()`, `EDIT_TIMING.flash` |
+| Camera after a hit cut | never still: **creep-in** +5 % over 7 f (accelerating) or **settle** −4 % (big punches 2× → 1×); shake **1.5–3.5 %** of width per frame decaying; rotation ~1° (p90 5°) | `<EditCam kind="creep" / "settle" / "punch">` |
+| Whip / blur cut | directional blur dips to 30 % sharpness at the cut, sharp again after **6 f**; a whip darkens the frame ~15 % | `transition("whip")`, `blurDissolve` |
+| Black | **3 f** before the drop | `transplan.py --drop`, `blackDip` |
+| Dissolve | 3–5 f, only in quiet parts | `dissolve` with `frames: 4` |
+
+Plan an edit: `python tools/transplan.py src/beats.json --start <s> --end <s> --drop <s> --style phonk|anime|cinematic` → `src/trans-plan.json` (`shots[]` with `from, dur, in` = `transition()` kind, `cam` = `EditCam` kind, `fx`, `sfx`), plus stats to compare with the numbers above (`/ae-motion:trans-plan`).
+
 Learn new references: `python tools/transscan.py <folder_with_videos> <out>` → `transitions.json`, review strips per cut, summary. Look at the strips, then map what you see to the kinds above (`/ae-motion:trans-learn`).
 
 ## Why transitions look cheap (3 rules)
 1. **Overlap** — a transition needs frames of both shots. Without overlap it flashes black or freezes. `<TransitionSeries>` does it for you; plan shot lengths with the overlap in mind (total = sum − transition frames).
-2. **Restraint** — the clean cut is the best transition. One effect per 5–10 cuts at most; never the same effect twice in a row. 6–16 frames.
+2. **Restraint** — the clean cut is the best transition. In calm / narrative videos: one effect per 5–10 cuts, 6–16 frames, no repeats. **Edits are different** (measured, see below): the same event repeats in bursts of 2–5 on consecutive hits; what must not repeat is an *accent* (invert, glitch, black) more than 3 times.
 3. **Motivation** — every effect needs a reason in the picture or the sound: time passes (dissolve), a shape matches (match reveal), motion continues (whip, speed ramp), the beat hits (glitch/flash on `hits`).
 
 ## References

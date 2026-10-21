@@ -35,6 +35,14 @@ Per-edit usage (how many of 28 edits use it at least once): shake on the hit 19 
 Timings (median): flash up **1 f**, down **4 f** · black **3 f** · blur **6 f** · dissolve **4 f** · RGB 2 px for 4 f · zoom 7 f · an event every 8 f.
 Patterns seen in the review strips and now in `kit/cuts.tsx`: exposure settle (new shot starts blown out), solid color flash frames, invert / 1-bit frames on the cut, shrink-to-point → pop, punch-in with radial blur, vertical push, pixel-mosaic resolve out of white, TV line collapse, hue sweep, A/B stutter, card expand. Also seen, covered by existing components: polarity-flipping word cuts (black ↔ white bg per word → `InvertFlash` + lyric words), strobe red/white with a 1-bit subject (`Strobe` + `Threshold`), kaleidoscope tiles (`Mirror`), percentage counters (`PercentCounter`).
 
+## Deep pass (camera tracked per frame, audio taken from each video)
+- Sync: cut-to-onset offset histogram −6..+6 f = 7, 23, 35, 48, 70, 107, **129**, 92, 95, 53, 38, 16, 3 → cuts land on the onset.
+- Runs of the same transition: flash median 2 (max 10), zoom-out p90 6, hard cut max 16; 54 % of events are followed by the same kind; gap inside a run 4 f, at a change 14 f.
+- Flash / peak, frames −2..+8: 0.38, 1, 1, 0.74, 0.54, 0.45, 0.33, 0.27, 0.29, 0.17, 0.10.
+- Zoom-in after the cut: scale 1.000 → 1.049 over 7 f (accelerating); zoom-out: 1.000 → 0.962 (settling); p10/p90 of the zoom amount: 0.49× / 1.54×.
+- Camera shake on zoom/flash cuts: 1.5–3.7 % of width per frame (p90 6–9 %), rotation ~1°/f (p90 5–7°). Hard cuts: 0.2 %, still.
+- Hard cuts live in the calm parts (shot before them: 12.5 f); effects in the loud parts (4–8 f).
+
 ## Look
 - Heavy contrast + saturation, crushed blacks, blown highlights, bloom on everything bright.
 - Grain is rare; sharpness + glow is common. Color: either hyper-saturated (anime) or 2-tone (red/white, b/w + one color).

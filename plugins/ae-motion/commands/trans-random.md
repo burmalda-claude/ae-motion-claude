@@ -3,9 +3,11 @@ description: "Smart random — chooses the transition type from shot energy and 
 argument-hint: "<which cut / shots, optional>"
 ---
 
-For each cut compute energy (music section: stop/break/intro=low, ui/build=mid, drop=high; or `beats.json` energy) and call `pickTransition()`. Never repeat the same kind more than twice in a row (if it would, fall back to a clean cut). Print `cut i: <kind> (<frames> f) — <why>` for each, then apply.
+For each cut compute energy (music section: stop/break/intro=low, ui/build=mid, drop=high; or `beats.json` energy) and call `pickTransition()`. Calm videos: never repeat the same kind more than twice in a row. Edits: repeat one kind in bursts of 2–5 on consecutive hits and change it on a downbeat; never more than 3 accents (invert, glitch, black) in a row. Print `cut i: <kind> (<frames> f) — <why>` for each, then apply.
 
-Use the transition engine of the `motion-design` skill (`kit/cuts.tsx`, rules in `references/transitions.md`). Request: $ARGUMENTS
+Use the transition engine of the `motion-design` skill (`kit/cuts.tsx`, rules in `references/transitions.md`). For edits, start from `python tools/transplan.py src/beats.json --start <s> --end <s> --drop <s>` (measured grammar: cuts on onsets, bursts of 2–5 of one kind, black + flash on the drop) and wrap each shot in `<EditCam kind={shot.cam}>`.
+
+Request: $ARGUMENTS
 
 Rules that always apply:
 - Offer the **clean cut first**. Add an effect only when it is motivated (time passes, energy changes, shapes match, beat hit).

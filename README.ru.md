@@ -110,6 +110,7 @@
 | `/ae-motion:trans-glitch` | Atmospheric / phonk | 4–8 | Ease | glitch + impact on the hit | RGB split + slices + VHS + 1-frame invert |
 | `/ae-motion:trans-random` | smart | per kind | per kind | BPM + energy per beat | chooses by shot energy & BPM, never the same twice in a row |
 | `/ae-motion:trans-edit` | Приёмы эдитов (замерены) | 3–10 | по типу | удар на кадре склейки | влёт с зумом, вспышка-пересвет, негатив / ч/б кадры, сжатие-выпрыгивание, выталкивание, пикселизация, «выключение ТВ», сдвиг оттенка, мерцание, карточка |
+| `/ae-motion:trans-plan` | Планировщик (по замерам) | по типу | по типу | SFX на каждую склейку | `tools/transplan.py`: склейки на ударах, серии из 2–5 одинаковых переходов, чёрное + вспышка на дропе, живая камера (`EditCam`) на каждой склейке в бит |
 | `/ae-motion:trans-learn` | Анализ | — | — | — | сканирует ваши референсы (`tools/transscan.py`): каждая склейка замерена, ленты кадров, сопоставление с типами переходов |
 
 ### Почему ваши переходы выглядят дёшево

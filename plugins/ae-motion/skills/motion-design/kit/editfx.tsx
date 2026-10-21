@@ -5,12 +5,36 @@ import { noise2D } from "@remotion/noise";
 import { EASE, clamp, prog } from "./easing";
 import { Smear } from "./fx";
 
-/** Whiteout bloom flash on a hit: blows out to white in `up` frames, fades back in `down` frames. Put it on top. */
-export const BloomFlash: React.FC<{ at: number; up?: number; down?: number; color?: string }> = ({ at, up = 2, down = 6, color = "#fff" }) => {
+/** Measured in the reference edits (tools/transscan.py + deep pass, 840 events / 27 edits). Frames at the edit's fps. */
+export const EDIT_TIMING = {
+  /** flash brightness / peak for frames -2..+8 around the cut: starts on the OLD shot, peak on -1 and 0, ~8 frame tail */
+  flash: [0.38, 1, 1, 0.74, 0.54, 0.45, 0.33, 0.27, 0.22, 0.17, 0.1],
+  creepIn: 1.05, // new shot pushes in +5% over ~7 frames (accelerating)
+  settle: 0.96, // or lands punched in and settles -4% (big punches: up to 2x -> 1x)
+  shake: 0.025, // camera shake on hit cuts: 1.5–3.5 % of frame width per frame, decays over the shot
+  rot: 1, // degrees of rotational shake (p90 ~5)
+  burstGap: 4, // frames between events of the same kind inside a burst (runs of 2–5)
+  changeGap: 14, // frames before the kind changes (phrase boundary)
+  black: 3, // black frames before a drop
+  blur: 6, // directional blur frames around a whip / blur cut
+  dissolve: 4, // dissolves in edits are short
+};
+
+/** Brightness of the measured flash at frame f for a cut at `at` (0..1). `len` stretches the tail. */
+export const flashCurve = (f: number, at: number, len = 1) => {
+  const k = (f - at) / len + 2;
+  if (k < 0 || k > 10) return 0;
+  const i = Math.floor(k);
+  return EDIT_TIMING.flash[i] + (EDIT_TIMING.flash[Math.min(10, i + 1)] - EDIT_TIMING.flash[i]) * (k - i);
+};
+
+/** Whiteout bloom flash on a hit. Default = the measured curve (starts 2 frames before `at`, peak -1..0, 8-frame tail); pass up/down for a custom triangle. */
+export const BloomFlash: React.FC<{ at: number; up?: number; down?: number; color?: string; len?: number }> = ({ at, up, down, color = "#fff", len = 1 }) => {
   const f = useCurrentFrame();
-  const o = interpolate(f, [at - up, at, at + down], [0, 1, 0], { ...clamp, easing: EASE.out });
+  const o = up === undefined && down === undefined ? flashCurve(f, at, len) : interpolate(f, [at - (up ?? 2), at, at + (down ?? 6)], [0, 1, 0], { ...clamp, easing: EASE.out });
   if (o <= 0) return null;
-  return <AbsoluteFill style={{ background: `radial-gradient(circle, ${color} 0%, ${color} ${30 + o * 40}%, ${color}cc 100%)`, opacity: o, pointerEvents: "none" }} />;
+  const c = /^#[0-9a-f]{3}$/i.test(color) ? "#" + [...color.slice(1)].map((h) => h + h).join("") : color; // "#fff" + "cc" is not a colour
+  return <AbsoluteFill style={{ background: `radial-gradient(circle, ${c} 0%, ${c} ${30 + o * 40}%, ${c}cc 100%)`, opacity: o, pointerEvents: "none" }} />;
 };
 
 /** Wrap content: on each hit, shake with directional motion blur for `len` frames (the edit "hit shake"). */
@@ -136,3 +160,26 @@ export const BlackDip: React.FC<{ at: number; frames?: number }> = ({ at, frames
 
 /** Quick helper: 0→1 envelope on hit frames (for driving any prop). */
 export const hitEnvelope = (f: number, hits: number[], len = 8) => hits.reduce((a, h) => Math.max(a, f >= h ? 1 - prog(f, h, len, EASE.out) : 0), 0);
+
+/** Camera life of a shot right after an edit cut (measured): "creep" pushes in +5 % accelerating, "settle" lands punched in and
+ * eases out, "punch" = big settle (1.5x -> 1x). Plus a hit shake that decays over the shot. Wrap one shot; frames are shot-relative. */
+export const EditCam: React.FC<{ kind?: "creep" | "settle" | "punch" | "none"; dur: number; shake?: number; seed?: string; children: React.ReactNode }> = ({
+  kind = "creep",
+  dur,
+  shake = EDIT_TIMING.shake,
+  seed = "ec",
+  children,
+}) => {
+  const f = useCurrentFrame();
+  const t = Math.min(1, f / Math.max(1, Math.min(dur, 8)));
+  const s =
+    kind === "creep" ? 1 + (EDIT_TIMING.creepIn - 1) * EASE.in(t) * Math.max(1, f / 8) ** 0.5
+    : kind === "settle" ? 1 + (1 / EDIT_TIMING.settle - 1) * (1 - EASE.out(t))
+    : kind === "punch" ? 1 + 0.5 * (1 - EASE.out(Math.min(1, f / 6)))
+    : 1;
+  const k = shake * Math.max(0, 1 - f / Math.max(6, dur)); // shake decays over the shot
+  const x = noise2D(seed + "x", f * 0.9, 0) * k * 100;
+  const y = noise2D(seed + "y", f * 0.9, 3) * k * 100;
+  const r = noise2D(seed + "r", f * 0.9, 7) * EDIT_TIMING.rot * (k / Math.max(1e-6, shake));
+  return <AbsoluteFill style={{ transform: `translate(${x}%, ${y}%) rotate(${r}deg) scale(${s * (1 + 2 * k)})` }}>{children}</AbsoluteFill>;
+};

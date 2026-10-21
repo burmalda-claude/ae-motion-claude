@@ -110,6 +110,7 @@ A separate engine (`kit/cuts.tsx`, rules in `references/transitions.md`): a tran
 | `/ae-motion:trans-glitch` | Atmospheric / phonk | 4–8 | Ease | glitch + impact on the hit | RGB split + slices + VHS + 1-frame invert |
 | `/ae-motion:trans-random` | smart | per kind | per kind | BPM + energy per beat | chooses by shot energy & BPM, never the same twice in a row |
 | `/ae-motion:trans-edit` | Edit staples (measured) | 3–10 | per kind | impact on the cut frame | punch-in, exposure flash, invert / 1-bit frames, shrink-pop, push, pixelate, TV-off, hue sweep, stutter, card |
+| `/ae-motion:trans-plan` | Planner (measured) | per kind | per kind | sfx per cut | `tools/transplan.py`: cuts on onsets, bursts of 2–5 of one kind, black + flash on the drop, camera life (`EditCam`) on every hit cut |
 | `/ae-motion:trans-learn` | Analysis | — | — | — | scan your reference edits (`tools/transscan.py`): every cut measured, review strips, mapped to kinds |
 
 ### Why your transitions look cheap
