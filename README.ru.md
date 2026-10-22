@@ -10,7 +10,7 @@
 
 | Часть | Что делает |
 |---|---|
-| **Режиссёрский режим** (`references/director.md`) | Превращает короткий промпт в полное ТЗ без допроса: формат, длина, тема по смыслу ролика, язык, сценарий короткими битами — и сразу собирает |
+| **Бриф + режиссёр** (`references/brief.md`, `references/director.md`) | Сначала говорит, как понял задачу, и задаёт один раунд вопросов в один клик (формат, длина, направление, звук) с уже выбранной рекомендацией; потом превращает ответы в полное ТЗ: формат, длина, тема по смыслу ролика, язык, сценарий короткими битами — и сразу собирает |
 | **Голос и звук** (`tools/build.py`, `tools/sound.py`) | Одна команда превращает `script.json` в: озвучку по фразам (Edge TTS, по умолчанию выразительный Brian Multilingual — чисто говорит по-русски) с **кадром каждого слова**, обработку голоса как на радио, синтезированные эффекты на словах, музыку 123 BPM по секциям с «качанием» и приглушением под голос, мастеринг до −14 LUFS. Уровни сведения сняты с эталонного ролика |
 | **23 синтезированных эффекта** | удар, хит, саб-удар, бум, свист, засасывание, зум, райзер, реверс, световой меч, глитч, печать, клик, клавиша, поп, звон, тик, затвор, заикание, остановка ленты… Без сэмплов и лицензий |
 | **Набор компонентов** (`kit/`) | 70+ компонентов Remotion: кинетический текст, зум-блюр, варп-полосы, линии скорости, световые разрезы, камера, переходы, интерфейсы в стиле AE, таймлайн под голос |
@@ -30,7 +30,31 @@
 | Переходы | `whip()`, `zoomThrough()`, `zoomBlur()`, `streak()`, `slices()` + стандартные fade / slide / wipe / flip / clock wipe |
 | Интерфейс в стиле AE | `CompGrid`, `TransformBox`, `LayerBars`, `KeyLanes`, `GraphCurve`, `EchoTower`, `Timeline`, `RenderBar`, `Ruler`, `Filmstrip`, `PlayerMock`, `PromptBox`, `ChatCard`, `NodeGraph`, `Cursor` |
 
+## Сначала бриф, потом сборка
+
+Перед тем как делать или менять видео, Claude в 2–4 строках пересказывает, как понял задачу (о чём, зачем, главная мысль, чем заканчивается), и задаёт **один раунд** до 4 вопросов. В каждом уже выбран рекомендуемый вариант, так что согласиться со всем — один клик на вопрос:
+
+| Вопрос | Зачем |
+|---|---|
+| Где будет крутиться (9:16 / 16:9 / 1:1 · 4:5) | формат меняет композицию каждого шота; поменять потом = пересобрать всё |
+| Сколько длится | длина задаёт число битов и сценарий: 15 и 30 секунд — разные ролики |
+| Направление: 3 варианта, каждый = тема + 2–3 названия приёмов + темп | «динамично» каждый понимает по-своему, а «вип-пан + удар с тряской» — одинаково |
+| Звук: голос + музыка / свой трек / только музыка / без звука | голос и бит задают длину шотов; смена звука потом перетаймит весь монтаж |
+| Материалы и тексты, а при правке — «что не трогать» | бренд и логотип не придумать; одобренное не должно сломаться при правке |
+
+Вопросы, на которые уже ответил промпт, пропускаются. Скажите «без вопросов», чтобы пропустить бриф. Подробно: `references/brief.md`.
+
+## Словарь движений: 144 названия → kit
+
+«Вижу, а как это называется?» Словарь даёт каждому движению имя, живой пример и компоненты kit, которыми оно собирается: 144 названия из [motion-prompt](https://github.com/showheyohtaki/motion-prompt) (моушн-графика, камера и склейки, UI, веб-эффекты, фото-свет и стиль; MIT, © Shohei Ohtaki) плюс слой ae-motion: русские названия и запросы, **привязка к компонентам kit** (`≈` — если kit даёт только похожий вид), энергия 1–3 и режимы, где приём уместен.
+
+- **Сайт:** https://burmalda-claude.github.io/ae-motion-claude/ — все названия в движении; поиск по-русски / по-английски / по-японски или по `#043`, фильтры по набору, режиму, энергии и «только из kit», карточка со спецификацией таймингов и похожими приёмами, подборка из нескольких приёмов + заметка → готовый промпт для Claude в один клик. Исходник: `docs/` (GitHub Pages, без сборки).
+- **В Claude:** `/ae-motion:lexicon <описание>` или просто назовите приём в запросе; Claude ищет через `tools/lexicon.py find` и использует названия в вариантах «Направления» на брифе.
+- **Данные:** `lexicon/motion-prompt/*.json` (оригинал, не тронут) + `lexicon/ae.json` (наш слой). `python tools/lexicon.py` проверяет, что каждый компонент реально есть в kit, и пересобирает `references/lexicon.md` и `docs/lexicon.json`; `--check` падает, если они устарели.
+
 ## Команды / режимы
+
+Не знаете, с чего начать: `/ae-motion:help`.
 
 Одна команда = весь стек (эффекты, текстовые пресеты, шрифты, тайминги, поведение по биту и звуку, форматы). Команды с пространством имён: `/ae-motion:cinematic` (просто `/cinematic` тоже работает, если имя не занято другим плагином). Пресеты лежат в `skills/motion-design/modes/<id>.json`.
 
@@ -91,6 +115,8 @@
 
 Референсы: DJordanMedia · Versely · SONNISS · AEscripts AI Scorpion SFX.
 
+Названия движений, описания, спецификации и анимированные примеры словаря: [motion-prompt](https://github.com/showheyohtaki/motion-prompt), Shohei Ohtaki, MIT (лицензия лежит в `lexicon/motion-prompt/LICENSE` и `docs/vendor/motion-prompt/LICENSE`).
+
 ### Что делают настоящие эдиты
 `references/edits-breakdown.md`: 28 TikTok-эдитов, разобранных по кадрам, — ~7 склеек на 10 с, половина на звуковых ударах, ~2 вспышки в белое на 10 с, тряска на ударах, зум-панчи, стробоскоп, ореол-свечение; музыка 108–144 BPM, очень много саба. Это стало `kit/editfx.tsx` и переходами `whiteout` / `blackDip`. Второй проход, `tools/transscan.py`, замерил все 1 148 склеек и вспышек в этих эдитах (вспышка нарастает 1 кадр и спадает 4, чёрное держится 3 кадра, размытие 6, растворения всего 4 кадра, событие каждые 8 кадров) и добавил в движок 11 приёмов: `punchIn`, `exposure`, `invertCut`, `threshold`, `shrinkPop`, `push`, `pixelate`, `tvOff`, `hueShift`, `stutter`, `card` (демо: `examples/EditCuts.tsx`, 9:16).
 
@@ -101,15 +127,15 @@
 | Команда | Категория | Длительность (кадры) | Easing | Аудио | Пример |
 |---|---|---|---|---|---|
 | `/ae-motion:transition` | all | per cut | per kind | SFX on every transition frame | pick + place transitions for every cut of the video |
-| `/ae-motion:trans-clean` | Cut | 0 (dissolve 10 if the cut jumps) | — | thump on the cut | clean cut, dissolve only if the cut does not read |
-| `/ae-motion:trans-dissolve` | Dissolve | 6–12 | Ease | soft whoosh | cross / blur / 100→103% scale dissolve |
-| `/ae-motion:trans-wipe` | Wipe & Reveal | 12–14 | Ease | swish into the edge | circle/diagonal/panel, eye → moon match cut, track matte; always with an edge |
-| `/ae-motion:trans-speedramp` | Speed Ramp | ramp 12 | S-curve | whoosh on the cut | 100% → 45% → cut → 45% → 100%, no effect |
-| `/ae-motion:trans-beat` | any, on beats | 6–16 | per kind | beats.py: beats / downbeats / hits | beat analysis first, transitions centered on beats |
-| `/ae-motion:trans-morph` | Trend: morph text | 12–16 | S-curve | swish | letters melt into letters (MorphText) + liquid |
-| `/ae-motion:trans-glitch` | Atmospheric / phonk | 4–8 | Ease | glitch + impact on the hit | RGB split + slices + VHS + 1-frame invert |
-| `/ae-motion:trans-random` | smart | per kind | per kind | BPM + energy per beat | chooses by shot energy & BPM, never the same twice in a row |
-| `/ae-motion:trans-edit` | Приёмы эдитов (замерены) | 3–10 | по типу | удар на кадре склейки | влёт с зумом, вспышка-пересвет, негатив / ч/б кадры, сжатие-выпрыгивание, выталкивание, пикселизация, «выключение ТВ», сдвиг оттенка, мерцание, карточка |
+| `/ae-motion:transition clean` | Cut | 0 (dissolve 10 if the cut jumps) | — | thump on the cut | clean cut, dissolve only if the cut does not read |
+| `/ae-motion:transition dissolve` | Dissolve | 6–12 | Ease | soft whoosh | cross / blur / 100→103% scale dissolve |
+| `/ae-motion:transition wipe` | Wipe & Reveal | 12–14 | Ease | swish into the edge | circle/diagonal/panel, eye → moon match cut, track matte; always with an edge |
+| `/ae-motion:transition speedramp` | Speed Ramp | ramp 12 | S-curve | whoosh on the cut | 100% → 45% → cut → 45% → 100%, no effect |
+| `/ae-motion:transition beat` | any, on beats | 6–16 | per kind | beats.py: beats / downbeats / hits | beat analysis first, transitions centered on beats |
+| `/ae-motion:transition morph` | Trend: morph text | 12–16 | S-curve | swish | letters melt into letters (MorphText) + liquid |
+| `/ae-motion:transition glitch` | Atmospheric / phonk | 4–8 | Ease | glitch + impact on the hit | RGB split + slices + VHS + 1-frame invert |
+| `/ae-motion:transition random` | smart | per kind | per kind | BPM + energy per beat | chooses by shot energy & BPM, never the same twice in a row |
+| `/ae-motion:transition edit` | Приёмы эдитов (замерены) | 3–10 | по типу | удар на кадре склейки | влёт с зумом, вспышка-пересвет, негатив / ч/б кадры, сжатие-выпрыгивание, выталкивание, пикселизация, «выключение ТВ», сдвиг оттенка, мерцание, карточка |
 | `/ae-motion:trans-plan` | Планировщик (по замерам) | по типу | по типу | SFX на каждую склейку | `tools/transplan.py`: склейки на ударах, серии из 2–5 одинаковых переходов, чёрное + вспышка на дропе, живая камера (`EditCam`) на каждой склейке в бит |
 | `/ae-motion:trans-learn` | Анализ | — | — | — | сканирует ваши референсы (`tools/transscan.py`): каждая склейка замерена, ленты кадров, сопоставление с типами переходов |
 
@@ -222,6 +248,7 @@ Claude выберет тему, напишет текст озвучки, сге
 ```
 ae-motion-claude/
 ├── .claude-plugin/marketplace.json
+├── docs/               ← сайт словаря (GitHub Pages): index.html, lexicon.json, vendor/motion-prompt
 └── plugins/ae-motion/
     ├── .claude-plugin/plugin.json
     └── skills/motion-design/
@@ -229,7 +256,8 @@ ae-motion-claude/
         ├── kit/            ← easing, text, fx, kinetic, camera, transitions, ui, audio (+ index.ts)
         ├── tools/          ← build.py (script → voice, timing, SFX, music, master), sound.py (synths, DSP)
         ├── examples/       ← Trailer.tsx + trailer-script.json, KineticPromo.tsx, Showcase.tsx
-        └── references/{director,editing,reference-breakdown,themes,fonts,effects}.md
+        ├── lexicon/        ← паки motion-prompt (MIT) + ae.json (русские названия, привязка к kit, энергия, режимы)
+        └── references/{brief,director,lexicon,editing,transitions,themes,fonts,effects,…}.md
 ```
 
 ## Шрифты

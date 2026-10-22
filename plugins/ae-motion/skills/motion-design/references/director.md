@@ -1,6 +1,6 @@
 # Director mode: short prompt → full video
 
-Users write one line ("сделай промо для моей кофейни", "intro for my channel"). Your job is to fill in everything a motion designer would decide, **without a questionnaire**. Ask at most one question, and only if a blocker is missing (e.g. a brand name you can't invent). Otherwise decide, state the decisions in 3–5 lines, and build.
+Users write one line ("сделай промо для моей кофейни", "intro for my channel"). Your job is to fill in everything a motion designer would decide. The few decisions that are expensive to get wrong (frame, length, direction, sound) are confirmed with the user first in one round: **run `references/brief.md` before building or changing a video.** Everything else you decide yourself and state in the plan.
 
 ## 1. Extract from the prompt
 
@@ -52,7 +52,7 @@ LOGO + CTA  1–2 shots  × 45–60f  calm hold so it can be read
 
 ## 4. Announce, then build
 
-Before coding, print a compact plan (no questions):
+After the brief, print a compact plan with the answers folded in:
 ```
 Формат: 1080×1920, 30fps, 15 c · Тема: Kinetic Red · Шрифты: Archivo Black + Oswald
 Бит-лист: NO WAY → OKAY. → THAT I DID → ... → KATANA (лого) → ONE PROMPT.

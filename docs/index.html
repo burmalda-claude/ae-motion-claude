@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Словарь движений ae-motion</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="144 названия движений с живыми примерами, привязкой к компонентам ae-motion и готовыми запросами для Claude.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: an edit bay. Sticky "transport bar" (search + filters) on top, a grid of looping clips, a bin (picked clips) docked at the bottom. */
+:root {
+  --bg: #e9ecf1;        /* cool graphite paper */
+  --panel: #f7f8fa;
+  --ink: #12151b;
+  --mute: #5a6271;
+  --line: #cdd2db;
+  --key: #b86a00;       /* AE keyframe amber */
+  --key-soft: #f5e3c8;
+  --kit: #0f6f7a;       /* "built in the kit" teal */
+  --kit-soft: #d5ecee;
+  --approx: #7a5a0f;
+  --stage: #0f1a3d;
+  --f-display: "Unbounded", "Arial Black", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --r: 10px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #111318; --panel: #191c23; --ink: #e8ebf1; --mute: #98a0ae; --line: #2b303b;
+  --key: #f2a93b; --key-soft: #3a2a12; --kit: #5cc8d3; --kit-soft: #12333a; --approx: #d9b45a; --stage: #0b1130;
+  color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #111318; --panel: #191c23; --ink: #e8ebf1; --mute: #98a0ae; --line: #2b303b;
+  --key: #f2a93b; --key-soft: #3a2a12; --kit: #5cc8d3; --kit-soft: #12333a; --approx: #d9b45a; --stage: #0b1130;
+  color-scheme: dark; }
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 var(--f-body); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--panel); }
+.wrap { max-width: 1320px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--key); outline-offset: 2px; }
+
+header.top { padding-block: 28px 18px; display: grid; gap: 10px; }
+h1 { font: 700 clamp(26px, 4.6vw, 46px)/1.05 var(--f-display); margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
+h1 .tc { font: 600 0.42em var(--f-mono); color: var(--key); vertical-align: 0.5em; margin-left: 0.3em; letter-spacing: 0; }
+.lead { margin: 0; max-width: 68ch; color: var(--mute); }
+.lead b { color: var(--ink); font-weight: 600; }
+
+.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--panel); border-block: 1px solid var(--line); }
+.bar .wrap { padding-block: 10px; display: grid; gap: 8px; }
+.row { display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; }
+.search { flex: 1 1 260px; min-width: 0; display: flex; align-items: center; gap: 8px; background: var(--bg); border: 1px solid var(--line); border-radius: var(--r); padding: 0 10px; }
+.search input { flex: 1; min-width: 0; border: 0; background: none; padding: 9px 0; outline: none; }
+.search kbd { font: 12px var(--f-mono); color: var(--mute); border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; }
+.chip { border: 1px solid var(--line); background: var(--bg); border-radius: 999px; padding: 4px 11px; cursor: pointer; font-size: 13px; white-space: nowrap; }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--panel); border-color: var(--ink); }
+.chip .n { font: 11px var(--f-mono); opacity: 0.6; margin-left: 4px; }
+select.chip { padding-right: 8px; }
+@media (max-width: 640px) { #packs { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; } .bar .wrap { padding-block: 8px; } }
+.count { font: 12px var(--f-mono); color: var(--mute); margin-left: auto; }
+
+main.wrap { padding-block: 18px 140px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 14px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; display: flex; flex-direction: column; min-width: 0; }
+.card.picked { border-color: var(--key); box-shadow: 0 0 0 1px var(--key); }
+.stage { position: relative; background: var(--stage); aspect-ratio: 539 / 208; cursor: zoom-in; }
+.stage canvas { display: block; width: 100%; height: 100%; }
+.stage .id { position: absolute; left: 8px; top: 6px; font: 600 11px var(--f-mono); color: #fff; background: rgba(0,0,0,.45); padding: 1px 6px; border-radius: 4px; }
+.body { padding: 12px 14px 14px; display: grid; gap: 8px; flex: 1; align-content: start; }
+.eyebrow { font: 11px var(--f-mono); color: var(--mute); text-transform: uppercase; letter-spacing: 0.06em; display: flex; justify-content: space-between; gap: 8px; }
+.name { margin: 0; font: 600 18px/1.25 var(--f-body); }
+.name small { display: block; font: 400 13px var(--f-body); color: var(--mute); }
+.meaning { margin: 0; font-size: 14px; }
+.kit { display: flex; flex-wrap: wrap; gap: 4px; }
+.k { font: 12px var(--f-mono); background: var(--kit-soft); color: var(--kit); padding: 1px 7px; border-radius: 5px; }
+.k.approx { background: transparent; color: var(--approx); border: 1px dashed currentColor; }
+.k.spec { background: transparent; color: var(--mute); border: 1px dashed var(--line); }
+.meter { display: inline-flex; gap: 2px; align-items: flex-end; height: 11px; }
+.meter i { width: 4px; background: var(--line); border-radius: 1px; }
+.meter i:nth-child(1) { height: 5px; } .meter i:nth-child(2) { height: 8px; } .meter i:nth-child(3) { height: 11px; }
+.meter[data-e="1"] i:nth-child(-n+1), .meter[data-e="2"] i:nth-child(-n+2), .meter[data-e="3"] i:nth-child(-n+3) { background: var(--key); }
+.ask { margin: 0; font-size: 13px; color: var(--mute); font-style: italic; }
+.actions { display: flex; gap: 6px; margin-top: auto; padding-top: 4px; }
+.btn { border: 1px solid var(--line); background: var(--bg); border-radius: 8px; padding: 6px 10px; cursor: pointer; font-size: 13px; }
+.btn:hover { border-color: var(--ink); }
+.btn.primary { background: var(--key); border-color: var(--key); color: #fff; font-weight: 600; }
+:root[data-theme="dark"] .btn.primary { color: #1a1206; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .btn.primary { color: #1a1206; } }
+.card.picked .pick { background: var(--key-soft); border-color: var(--key); }
+.empty { padding: 40px 0; color: var(--mute); text-align: center; }
+
+.bin { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; background: var(--panel); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom, 0px); }
+.bin .wrap { padding-block: 10px; display: grid; gap: 8px; }
+.clips { display: flex; gap: 6px; overflow-x: auto; min-width: 0; }
+.clip { font: 12px var(--f-mono); background: var(--key-soft); color: var(--ink); border-radius: 6px; padding: 3px 8px; white-space: nowrap; border: 0; cursor: pointer; }
+.bin textarea { width: 100%; min-height: 40px; resize: vertical; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); padding: 7px 10px; }
+.bin .row { justify-content: space-between; }
+.toast { font-size: 13px; color: var(--kit); }
+
+dialog { border: 1px solid var(--line); border-radius: 14px; background: var(--panel); color: var(--ink); padding: 0; width: min(760px, calc(100vw - 32px)); max-height: calc(100vh - 48px); }
+dialog::backdrop { background: rgba(5, 8, 15, 0.6); }
+dialog .stage { cursor: default; }
+dialog .body { padding: 16px 20px 20px; gap: 12px; }
+dialog h2 { margin: 0; font: 700 22px/1.2 var(--f-display); text-wrap: balance; }
+dialog h3 { margin: 6px 0 0; font: 600 11px var(--f-mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--mute); }
+dialog ul { margin: 0; padding-left: 18px; font-size: 14px; display: grid; gap: 3px; }
+dialog .close { position: absolute; right: 10px; top: 8px; background: rgba(0,0,0,.5); color: #fff; border: 0; border-radius: 6px; padding: 2px 9px; cursor: pointer; font-size: 18px; z-index: 1; }
+.rel { display: flex; flex-wrap: wrap; gap: 6px; }
+.prompt { font: 13px/1.5 var(--f-mono); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; white-space: pre-wrap; margin: 0; overflow-x: auto; }
+footer.wrap { padding-block: 0 24px; color: var(--mute); font-size: 13px; }
+footer a { color: inherit; }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+</head>
+<body>
+<header class="top wrap">
+  <h1>Словарь движений<span class="tc">00:00:144</span></h1>
+  <p class="lead">Не знаете, как называется движение — найдите его здесь. У каждого из <b>144 названий</b> есть живой пример, смысл в одну строку, готовый запрос и <b>компоненты ae-motion</b>, которыми Claude его соберёт. Отметьте нужные приёмы, допишите задачу и вставьте готовый промпт в Claude Code.</p>
+</header>
+
+<div class="bar">
+  <div class="wrap">
+    <div class="row">
+      <label class="search" for="q"><span aria-hidden="true">⌕</span><input id="q" type="search" placeholder="вип-пан, тряска, glitch, #043…" autocomplete="off"><kbd>/</kbd></label>
+      <select id="mode" class="chip" aria-label="Режим ae-motion"><option value="">Все режимы</option></select>
+      <select id="energy" class="chip" aria-label="Энергия"><option value="">Любая энергия</option><option value="1">Спокойно</option><option value="2">Средне</option><option value="3">Жёстко</option></select>
+      <button id="kitOnly" class="chip" aria-pressed="false" type="button">Только из kit</button>
+      <button id="theme" class="chip" type="button" aria-label="Тема">◐</button>
+    </div>
+    <div class="row" id="packs" role="group" aria-label="Набор"></div>
+  </div>
+</div>
+
+<main class="wrap">
+  <div class="grid" id="grid"></div>
+  <p class="empty" id="empty" hidden>Ничего не нашлось. Попробуйте английское название или тег: whip, zoom, mask, glitch.</p>
+</main>
+
+<footer class="wrap">
+  Названия, описания и анимации: <a href="https://github.com/showheyohtaki/motion-prompt" target="_blank" rel="noopener">motion-prompt</a> © Shohei Ohtaki, MIT. Русский слой, привязка к kit и сайт: <a href="https://github.com/burmalda-claude/ae-motion-claude" target="_blank" rel="noopener">ae-motion</a>.
+  <span class="count" id="count"></span>
+</footer>
+
+<section class="bin" id="bin" hidden aria-label="Подборка">
+  <div class="wrap">
+    <div class="row"><div class="clips" id="clips"></div><button class="btn" id="clear" type="button">Очистить</button></div>
+    <label for="note" hidden>Задача</label>
+    <textarea id="note" placeholder="Что делаем? Например: 20-сек эдит про кофейню, вертикально"></textarea>
+    <div class="row"><span class="toast" id="toast" aria-live="polite"></span><button class="btn primary" id="copyAll" type="button">Скопировать промпт для Claude</button></div>
+  </div>
+</section>
+
+<dialog id="dlg" aria-labelledby="dlgTitle"></dialog>
+
+<script src="vendor/motion-prompt/runtime.js"></script>
+<script src="vendor/motion-prompt/motion.js"></script>
+<script src="vendor/motion-prompt/camera.js"></script>
+<script src="vendor/motion-prompt/ui.js"></script>
+<script src="vendor/motion-prompt/lp.js"></script>
+<script src="vendor/motion-prompt/photo.js"></script>
+<script src="vendor/motion-prompt/motion2.js"></script>
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const MODES = ["edit","cinematic","lyric","clip","tutorial","gym","gaming","ad","amv","travel","meme","news","fashion","horror","wedding","realestate","asmr","reaction"];
+  const store = { get(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  let items = [], byId = {}, picked = new Set(store.get("ae-lex-picked", []));
+  const state = { q: "", pack: "", mode: "", energy: "", kitOnly: false };
+
+  // Same matching as tools/lexicon.py find: word-prefix, crude stem for long words.
+  const words = q => q.toLowerCase().split(/\s+/).filter(Boolean).map(w => w.length >= 6 ? w.slice(0, -2) : w);
+  const at = (w, s) => new RegExp("(^|[^\\p{L}\\p{N}])" + w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "u").test(s);
+  function score(it, ws) {
+    if (!ws.length) return 1;
+    const names = Object.values(it.name).join(" ").toLowerCase();
+    const hay = [names, it.meaning.ru, it.meaning.en, it.tags.join(" "), it.kit.join(" "), it.cat.ru, it.cat.en].join(" ").toLowerCase();
+    return ws.reduce((s, w) => s + (w.replace("#", "") === it.id || at(w, names) ? 3 : at(w, hay) ? 1 : 0), 0);
+  }
+
+  const kitLabel = k => { const a = k.startsWith("~"); k = k.replace(/^~/, ""); const t = k.startsWith("cut:") ? `transition("${k.slice(4)}")` : k.replace(":", " · "); return { a, t }; };
+  const kitHtml = it => it.kit.length
+    ? it.kit.map(k => { const { a, t } = kitLabel(k); return `<span class="k${a ? " approx" : ""}" title="${a ? "Похожий вид, не тот же приём" : "Есть в kit"}">${a ? "≈ " : ""}${esc(t)}</span>`; }).join("")
+    : `<span class="k spec" title="В kit нет — Claude соберёт по спецификации">по спецификации</span>`;
+  const meter = e => `<span class="meter" data-e="${e}" title="Энергия ${e} из 3"><i></i><i></i><i></i></span>`;
+
+  // --- live canvases: one rAF loop, draws only cards on screen
+  const visible = new Set();
+  const io = new IntersectionObserver(es => es.forEach(e => e.isIntersecting ? visible.add(e.target) : visible.delete(e.target)), { rootMargin: "100px" });
+  function mountCanvas(stage, it) {
+    const p = MotionPrompt.packs[it.pack], c = document.createElement("canvas"), dpr = Math.min(2, devicePixelRatio || 1);
+    c.width = p.width * dpr; c.height = p.height * dpr; c._it = it; c._dpr = dpr;
+    c.setAttribute("role", "img"); c.setAttribute("aria-label", `${it.name.en}: ${it.summary}`);
+    stage.style.aspectRatio = `${p.width} / ${p.height}`;
+    stage.prepend(c); io.observe(c); draw(c, p.cycle * 0.45);
+    return c;
+  }
+  function draw(c, t) {
+    const p = MotionPrompt.packs[c._it.pack], k = c.getContext("2d");
+    k.setTransform(c._dpr, 0, 0, c._dpr, 0, 0); k.clearRect(0, 0, p.width, p.height);
+    k.save(); try { p.cells[c._it.cell](k, p.width, p.height, t % p.cycle); } catch (e) { console.warn(c._it.id, e); } k.restore();
+  }
+  const t0 = performance.now();
+  (function loop(now) {
+    const t = (now - t0) / 1000;
+    visible.forEach(c => { if (!reduced || c._hover) draw(c, t); });
+    requestAnimationFrame(loop);
+  })(t0);
+
+  // --- render
+  function filtered() {
+    const ws = words(state.q);
+    return items.map(it => [score(it, ws), it])
+      .filter(([s, it]) => s && (!state.pack || it.pack === state.pack) && (!state.mode || it.modes.includes(state.mode))
+        && (!state.energy || it.e == state.energy) && (!state.kitOnly || it.kit.some(k => !k.startsWith("~"))))
+      .filter(([s], _, a) => s * 2 >= Math.max(...a.map(x => x[0])))
+      .sort((a, b) => b[0] - a[0] || a[1].id.localeCompare(b[1].id)).map(x => x[1]);
+  }
+  function card(it) {
+    const el = document.createElement("article");
+    el.className = "card" + (picked.has(it.id) ? " picked" : ""); el.id = "c" + it.id;
+    el.innerHTML = `<div class="stage" role="button" tabindex="0" aria-label="Открыть #${it.id} ${esc(it.name.ru)}"><span class="id">#${it.id}</span></div>
+      <div class="body">
+        <div class="eyebrow"><span>${esc(it.cat.ru)}</span>${meter(it.e)}</div>
+        <h2 class="name">${esc(it.name.ru)}<small>${esc(it.name.en)} · ${esc(it.name.ja)}</small></h2>
+        <p class="meaning">${esc(it.meaning.ru)}</p>
+        <div class="kit">${kitHtml(it)}</div>
+        <p class="ask">«${esc(it.ask.ru)}»</p>
+        <div class="actions"><button class="btn pick" type="button">${picked.has(it.id) ? "✓ В подборке" : "+ В подборку"}</button><button class="btn copy" type="button">Копировать запрос</button></div>
+      </div>`;
+    const stage = el.querySelector(".stage"), c = mountCanvas(stage, it);
+    stage.onmouseenter = () => c._hover = true; stage.onmouseleave = () => c._hover = false;
+    stage.onclick = () => open(it.id);
+    stage.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(it.id); } };
+    el.querySelector(".pick").onclick = () => toggle(it.id);
+    el.querySelector(".copy").onclick = e => copy(one(it), e.currentTarget);
+    return el;
+  }
+  const cards = {};
+  function render() {
+    const list = filtered(), grid = $("#grid");
+    grid.replaceChildren(...list.map(it => cards[it.id] ||= card(it)));
+    $("#empty").hidden = list.length > 0;
+    $("#count").textContent = `${list.length} / ${items.length}`;
+  }
+
+  // --- picks + prompts
+  const one = it => `#${it.id} ${it.name.en} / ${it.name.ru}: ${it.ask.ru}`;
+  function prompt() {
+    const mode = state.mode ? `/ae-motion:${state.mode} ` : "";
+    const note = $("#note").value.trim() || "<задача>";
+    const lines = [...picked].map(id => byId[id]).filter(Boolean).map(it => {
+      const kit = it.kit.length ? it.kit.map(k => kitLabel(k).t).join(", ") : "по спецификации motion-prompt";
+      return `- #${it.id} ${it.name.en} / ${it.name.ru} — ${it.meaning.ru}. Kit: ${kit}.`;
+    });
+    return `${mode}${note}\n\nПриёмы из словаря ae-motion (references/lexicon.md):\n${lines.join("\n")}`;
+  }
+  function toggle(id) {
+    picked.has(id) ? picked.delete(id) : picked.add(id);
+    store.set("ae-lex-picked", [...picked]);
+    const c = cards[id]; if (c) { c.classList.toggle("picked", picked.has(id)); c.querySelector(".pick").textContent = picked.has(id) ? "✓ В подборке" : "+ В подборку"; }
+    renderBin();
+  }
+  function renderBin() {
+    $("#bin").hidden = !picked.size;
+    $("#clips").replaceChildren(...[...picked].map(id => { const b = document.createElement("button"); b.className = "clip"; b.type = "button"; b.title = "Убрать"; b.textContent = `#${id} ${byId[id]?.name.ru ?? ""} ×`; b.onclick = () => toggle(id); return b; }));
+  }
+  async function copy(text, btn) {
+    const label = btn.textContent;
+    try { await navigator.clipboard.writeText(text); btn.textContent = "Скопировано"; }
+    catch { const pre = document.createElement("textarea"); pre.value = text; btn.after(pre); pre.select(); btn.textContent = "Выделено — Ctrl+C"; }
+    setTimeout(() => btn.textContent = label, 1600);
+  }
+
+  // --- detail dialog
+  const dlg = $("#dlg");
+  function open(id) {
+    const it = byId[id]; if (!it) return;
+    dlg.innerHTML = `<button class="close" type="button" aria-label="Закрыть">×</button><div class="stage"><span class="id">#${it.id}</span></div>
+      <div class="body">
+        <div class="eyebrow"><span>${esc(it.packName.ru)} · ${esc(it.cat.ru)}</span>${meter(it.e)}</div>
+        <h2 id="dlgTitle">${esc(it.name.ru)}</h2>
+        <p class="meaning">${esc(it.name.en)} · ${esc(it.name.ja)} — ${esc(it.meaning.ru)}</p>
+        <h3>Как собрать в ae-motion</h3><div class="kit">${kitHtml(it)}</div>
+        <h3>Запрос</h3><pre class="prompt">${esc(one(it))}\n${esc(it.ask.en)}</pre>
+        <h3>Спецификация (тайминги и изинг)</h3><ul>${it.spec.map(s => `<li>${esc(s)}</li>`).join("")}</ul>
+        <p class="ask">${esc(it.use)}</p>
+        ${it.modes.length ? `<h3>Режимы</h3><div class="rel">${it.modes.map(m => `<span class="k">/ae-motion:${m}</span>`).join("")}</div>` : ""}
+        ${it.related.length ? `<h3>Рядом</h3><div class="rel">${it.related.map(r => `<button class="chip" type="button" data-go="${r}">#${r} ${esc(byId[r].name.ru)}</button>`).join("")}</div>` : ""}
+        <div class="actions"><button class="btn primary" type="button" data-pick>${picked.has(id) ? "✓ В подборке" : "+ В подборку"}</button><button class="btn" type="button" data-copy>Копировать запрос</button></div>
+      </div>`;
+    const c = mountCanvas(dlg.querySelector(".stage"), it); c._hover = true;
+    dlg.querySelector(".close").onclick = () => dlg.close();
+    dlg.querySelector("[data-pick]").onclick = e => { toggle(id); e.currentTarget.textContent = picked.has(id) ? "✓ В подборке" : "+ В подборку"; };
+    dlg.querySelector("[data-copy]").onclick = e => copy(one(it), e.currentTarget);
+    dlg.querySelectorAll("[data-go]").forEach(b => b.onclick = () => open(b.dataset.go));
+    if (!dlg.open) dlg.showModal();
+    try { history.replaceState(null, "", "#" + id); } catch {}
+  }
+  dlg.addEventListener("close", () => { dlg.querySelectorAll("canvas").forEach(c => { io.unobserve(c); visible.delete(c); }); try { history.replaceState(null, "", location.pathname); } catch {} });
+  dlg.addEventListener("click", e => { if (e.target === dlg) dlg.close(); });
+
+  // --- controls
+  function chips() {
+    const packs = [["", "Все"], ...Object.entries(Object.fromEntries(items.map(it => [it.pack, it.packName.ru])))];
+    $("#packs").replaceChildren(...packs.map(([id, label]) => {
+      const b = document.createElement("button"); b.className = "chip"; b.type = "button";
+      b.setAttribute("aria-pressed", String(state.pack === id));
+      b.innerHTML = `${esc(label)}<span class="n">${id ? items.filter(it => it.pack === id).length : items.length}</span>`;
+      b.onclick = () => { state.pack = id; chips(); render(); };
+      return b;
+    }));
+  }
+  $("#mode").append(...MODES.map(m => new Option("/" + m, m)));
+  $("#q").oninput = e => { state.q = e.target.value; render(); };
+  $("#mode").onchange = e => { state.mode = e.target.value; render(); };
+  $("#energy").onchange = e => { state.energy = e.target.value; render(); };
+  $("#kitOnly").onclick = e => { state.kitOnly = !state.kitOnly; e.currentTarget.setAttribute("aria-pressed", String(state.kitOnly)); render(); };
+  $("#theme").onclick = () => { const r = document.documentElement, dark = r.dataset.theme ? r.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches; r.dataset.theme = dark ? "light" : "dark"; store.set("ae-lex-theme", r.dataset.theme); };
+  $("#clear").onclick = () => { [...picked].forEach(toggle); };
+  $("#copyAll").onclick = e => copy(prompt(), e.currentTarget);
+  $("#note").value = store.get("ae-lex-note", "");
+  $("#note").oninput = e => store.set("ae-lex-note", e.target.value);
+  addEventListener("keydown", e => { if (e.key === "/" && document.activeElement.tagName !== "INPUT" && document.activeElement.tagName !== "TEXTAREA") { e.preventDefault(); $("#q").focus(); } });
+  const savedTheme = store.get("ae-lex-theme", null); if (savedTheme) document.documentElement.dataset.theme = savedTheme;
+
+  fetch("lexicon.json").then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }).then(data => {
+    items = data; byId = Object.fromEntries(items.map(it => [it.id, it]));
+    picked = new Set([...picked].filter(id => byId[id]));
+    chips(); render(); renderBin();
+    const h = location.hash.slice(1); if (byId[h]) open(h);
+  }).catch(err => { $("#empty").hidden = false; $("#empty").textContent = `Не удалось загрузить lexicon.json (${err.message}). Откройте сайт через веб-сервер: python -m http.server в папке docs.`; });
+})();
+</script>
+</body>
+</html>

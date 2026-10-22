@@ -1,6 +1,6 @@
 ---
 name: motion-design
-description: Turn a short prompt into a polished, voiced After Effects-style video with Remotion (React). Use when the user asks for any video, promo, ad, intro, outro, trailer, title animation, kinetic typography, reels/shorts/TikTok edit, lower thirds, logo reveal, explainer, or says "like After Effects / Alight Motion". Includes built-in voice-over with per-word timing (words animate exactly when spoken), procedural sound effects and music, a component kit (zoom-blur/slam/whip/stretch/wobble/glitch text, warp streaks, speed lines, light slashes, glow, particles, camera, AE-style UI mocks), a director workflow, editing grammar, 14 themes and font pairings.
+description: Turn a short prompt into a polished, voiced After Effects-style video with Remotion (React). Use when the user asks for any video, promo, ad, intro, outro, trailer, title animation, kinetic typography, reels/shorts/TikTok edit, lower thirds, logo reveal, explainer, or says "like After Effects / Alight Motion". Includes built-in voice-over with per-word timing (words animate exactly when spoken), procedural sound effects and music, a component kit (zoom-blur/slam/whip/stretch/wobble/glitch text, warp streaks, speed lines, light slashes, glow, particles, camera, AE-style UI mocks), a director workflow with a short confirmation brief, a 144-name motion lexicon (what a move is called → which kit piece builds it), editing grammar, 14 themes and font pairings.
 ---
 
 # Motion design: prompt → voiced, After Effects-quality video
@@ -9,21 +9,31 @@ You are the motion designer, editor **and** sound designer. The user gives one l
 
 ## Workflow
 
-1. **Direct** — read `references/director.md`. Extract the brief, pick a theme (`references/themes.md`) and fonts (`references/fonts.md`), write the script as beats. Print a 3–5 line plan. Ask at most one question, only for a real blocker.
-2. **Set up the project** (if there is none):
+1. **Brief** — read `references/brief.md` and run it before creating or changing any video: say in 2–4 lines what you understood, then one `AskUserQuestion` round (frame, length, direction, sound…) with your recommendation preselected. Skip only if the user said "без вопросов" / "no questions".
+2. **Direct** — read `references/director.md`. Fold in the answers, pick a theme (`references/themes.md`) and fonts (`references/fonts.md`), write the script as beats. Print a 3–5 line plan.
+3. **Set up the project** (if there is none):
    - `npx create-video@latest` → Blank template, then `npm i`.
    - Copy `kit/` from this skill into `src/kit/`; copy `tools/` anywhere (they are Python scripts).
    - `npx remotion add @remotion/google-fonts @remotion/transitions @remotion/noise @remotion/paths @remotion/layout-utils`
    - tsconfig: `"resolveJsonModule": true` (voice timings are imported as JSON).
-3. **Script** — write `script.json` (format in `tools/build.py` docstring; full example `examples/trailer-script.json`): one beat per shot with `text` (what is spoken = what is on screen), `lead`/`tail`/`min` frames, `sfx` cues tied to words (`["impact", "w0"]`, `["riser", "end"]`), and a `music` mode where the energy changes (`intro | drop | build | break | ui | stop`). Text the TTS would mispronounce (English brand names in a Russian script) — write phonetically in `text`, keep the real spelling on screen.
-4. **Build audio + timing** — `pip install edge-tts numpy scipy librosa imageio-ffmpeg` once, then `python tools/build.py script.json .` → neural voice per line (default `en-US-BrianMultilingualNeural`: most expressive, speaks Russian cleanly), trimmed + broadcast voice chain, `src/timeline.json` with every word's frame, synthesized SFX on cues, an arranged 123-BPM bed with sidechain pumping and ducking under the voice, mastered to −14 LUFS / −1 dBTP → `public/audio/master.wav` (+ stems). Re-run after any script change; TTS is cached.
-5. **Build visuals** — one component per beat receiving `ShotProps` (`w(i)` = frame word *i* starts, `we(i)`, `dur`). Wrap each in `<Exit dur kind>` (3–5 f exits: `zoom`, `streakY`, `streakX`, `slice`, `whipL/R`, `spin`, `drop`), map ids → components, render `<TimelineShots timeline={timelineJson} shots={SHOTS} />` (it also plays the master). Mount `<ChromaDefs />` once. **Reference implementation: `examples/Trailer.tsx` + `examples/trailer-script.json`** — read it first; it is the quality bar.
-6. **Check** — render stills of 4–6 key frames (`npx remotion still <Id> --frame=<n> out/c<n>.png`) and Read them. Fix overflow, empty frames, wrong fonts, words appearing before they are spoken.
-7. **Render** — `npx remotion render <Id> out/video.mp4 --concurrency=50%`. Tell the user where the file is.
+4. **Script** — write `script.json` (format in `tools/build.py` docstring; full example `examples/trailer-script.json`): one beat per shot with `text` (what is spoken = what is on screen), `lead`/`tail`/`min` frames, `sfx` cues tied to words (`["impact", "w0"]`, `["riser", "end"]`), and a `music` mode where the energy changes (`intro | drop | build | break | ui | stop`). Text the TTS would mispronounce (English brand names in a Russian script) — write phonetically in `text`, keep the real spelling on screen.
+5. **Build audio + timing** — `pip install edge-tts numpy scipy librosa imageio-ffmpeg` once, then `python tools/build.py script.json .` → neural voice per line (default `en-US-BrianMultilingualNeural`: most expressive, speaks Russian cleanly), trimmed + broadcast voice chain, `src/timeline.json` with every word's frame, synthesized SFX on cues, an arranged 123-BPM bed with sidechain pumping and ducking under the voice, mastered to −14 LUFS / −1 dBTP → `public/audio/master.wav` (+ stems). Re-run after any script change; TTS is cached.
+6. **Build visuals** — one component per beat receiving `ShotProps` (`w(i)` = frame word *i* starts, `we(i)`, `dur`). Wrap each in `<Exit dur kind>` (3–5 f exits: `zoom`, `streakY`, `streakX`, `slice`, `whipL/R`, `spin`, `drop`), map ids → components, render `<TimelineShots timeline={timelineJson} shots={SHOTS} />` (it also plays the master). Mount `<ChromaDefs />` once. **Reference implementation: `examples/Trailer.tsx` + `examples/trailer-script.json`** — read it first; it is the quality bar.
+7. **Check** — render stills of 4–6 key frames (`npx remotion still <Id> --frame=<n> out/c<n>.png`) and Read them. Fix overflow, empty frames, wrong fonts, words appearing before they are spoken.
+8. **Render** — `npx remotion render <Id> out/video.mp4 --concurrency=50%`. Tell the user where the file is.
+
+## Motion lexicon: names → kit
+
+Users often know a move but not its name, or name it in their words ("камера рывком", "dolly zoom", "#043").
+`references/lexicon.md` maps 144 names (motion, camera, UI, web, photo looks; from motion-prompt, MIT) to kit pieces, with Russian names, energy and fitting modes.
+Search instead of reading it: `python tools/lexicon.py find <words>`; one entry with the full timing spec: `python tools/lexicon.py show <id>`.
+`≈` = close look from the kit, not the same move (say so); no kit piece = build from the spec, keeping its timings and easing.
+Use the names in the brief's Direction options and in plans. Visual gallery with a pick-and-copy prompt builder: `docs/` (GitHub Pages), command `/ae-motion:lexicon`.
+After editing `lexicon/ae.json` or the kit, run `python tools/lexicon.py` (it validates every kit name and regenerates the outputs).
 
 ## Modes (slash commands)
 
-`commands/*.md` → `/ae-motion:<mode>` (edit, cinematic, lyric, clip, tutorial, gym, gaming, ad, amv, travel, meme, news, fashion, horror, wedding, realestate, asmr, reaction). Each loads `modes/<mode>.json` — format sizes, palette, fonts, grade, text presets, timing, `effects` (the modifier stack: kit component names), `exits`, `audio` (voice/rate/musicStyle/bpm/sections, cut + beat behavior). A project file `.ae-motion/modes/<mode>.json` overrides the built-in one. Media-driven modes (lyric, clip, reaction, gaming) use `tools/transcribe.py` on the user's file instead of TTS. Mode building blocks live in `kit/modes.tsx` (Grade, LightLeak, VHS, Flicker, AnamorphicFlare, ImpactFrame, ChapterCard, QuoteCard, KaraokeLine, MemeCaption, Wasted, JPText, LowerThird, ProgressBar, Ticker, BreakingBanner, StepBadge, HighlightBox, Callout, ZoomTo, StatCard, TimerDisplay, Hitmarker, KillFeed, ComboCounter, PriceTag, CTAButton, BeforeAfter, MapPin, DayCounter, PiP, CommentBubble, MangaPanels, EmojiPop). `examples/Modes.tsx` flies through all modes.
+`commands/*.md` → `/ae-motion:<mode>` (start with `/ae-motion:help`; edit, cinematic, lyric, clip, tutorial, gym, gaming, ad, amv, travel, meme, news, fashion, horror, wedding, realestate, asmr, reaction). Each loads `modes/<mode>.json` — format sizes, palette, fonts, grade, text presets, timing, `effects` (the modifier stack: kit component names), `exits`, `audio` (voice/rate/musicStyle/bpm/sections, cut + beat behavior). A project file `.ae-motion/modes/<mode>.json` overrides the built-in one. Media-driven modes (lyric, clip, reaction, gaming) use `tools/transcribe.py` on the user's file instead of TTS. Mode building blocks live in `kit/modes.tsx` (Grade, LightLeak, VHS, Flicker, AnamorphicFlare, ImpactFrame, ChapterCard, QuoteCard, KaraokeLine, MemeCaption, Wasted, JPText, LowerThird, ProgressBar, Ticker, BreakingBanner, StepBadge, HighlightBox, Callout, ZoomTo, StatCard, TimerDisplay, Hitmarker, KillFeed, ComboCounter, PriceTag, CTAButton, BeforeAfter, MapPin, DayCounter, PiP, CommentBubble, MangaPanels, EmojiPop). `examples/Modes.tsx` flies through all modes.
 
 ## Music, SFX and what real edits do
 
@@ -33,7 +43,7 @@ You are the motion designer, editor **and** sound designer. The user gives one l
 
 ## Transitions
 
-Use `kit/cuts.tsx` — read `references/transitions.md` before placing any transition. Clean cut first; `transition(kind)` inside `<TransitionSeries>` (automatic overlap); `pickTransition()` for the choice; `SpeedRampCut`, `MorphText` + `GooDefs`; `tools/beats.py` for beat-synced cuts. Commands: `/ae-motion:transition`, `trans-clean`, `trans-dissolve`, `trans-wipe`, `trans-speedramp`, `trans-beat`, `trans-morph`, `trans-glitch`, `trans-random`, `trans-edit`, `trans-learn`. Demos: `examples/Transitions.tsx`, `examples/EditCuts.tsx` (11 edit staples, 9:16).
+Use `kit/cuts.tsx` — read `references/transitions.md` before placing any transition. Clean cut first; `transition(kind)` inside `<TransitionSeries>` (automatic overlap); `pickTransition()` for the choice; `SpeedRampCut`, `MorphText` + `GooDefs`; `tools/beats.py` for beat-synced cuts. Commands: `/ae-motion:transition [clean|dissolve|wipe|glitch|morph|speedramp|beat|edit|random]` (no kind = smart pick per cut), `trans-plan`, `trans-learn`. Demos: `examples/Transitions.tsx`, `examples/EditCuts.tsx` (11 edit staples, 9:16).
 
 ## Sync rules (what makes it feel edited, not generated)
 

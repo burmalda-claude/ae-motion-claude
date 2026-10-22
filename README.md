@@ -10,7 +10,7 @@ One skill, `motion-design`, which Claude loads on its own when you ask for a vid
 
 | Part | What it does |
 |---|---|
-| **Director mode** (`references/director.md`) | Turns a short prompt into a full brief without a questionnaire: format, length, theme by topic, language, script as short beats, then builds |
+| **Brief + director** (`references/brief.md`, `references/director.md`) | First says what it understood and asks one round of one-click questions (frame, length, direction, sound) with its recommendation preselected; then turns the answers into a full brief: format, length, theme by topic, language, script as short beats, then builds |
 | **Voice + sound engine** (`tools/build.py`, `tools/sound.py`) | One command turns `script.json` into: neural voice-over per line (Edge TTS, default Brian Multilingual — expressive, clean Russian) with **per-word frame timings**, a broadcast voice chain, synthesized SFX on word cues, an arranged 123-BPM music bed with sections, sidechain pumping and ducking, mastered to −14 LUFS. Mix targets measured from a top reference |
 | **23 synthesized SFX** | impact, hit, sub thump, boom, whoosh, swish-in, zoom, riser, reverse swell, light-saber slash, glitch, type-on, click, key, pop, shimmer, ding, tick, shutter, stutter, tape stop… No samples, no licenses |
 | **Component kit** (`kit/`) | 70+ Remotion components: kinetic text, zoom-blur, warp streaks, speed lines, light slashes, camera, transitions, AE-style UI mocks, voice timeline |
@@ -30,7 +30,31 @@ One skill, `motion-design`, which Claude loads on its own when you ask for a vid
 | Transitions | `whip()`, `zoomThrough()`, `zoomBlur()`, `streak()`, `slices()` + official fade / slide / wipe / flip / clock wipe |
 | AE-style UI | `CompGrid`, `TransformBox`, `LayerBars`, `KeyLanes`, `GraphCurve`, `EchoTower`, `Timeline`, `RenderBar`, `Ruler`, `Filmstrip`, `PlayerMock`, `PromptBox`, `ChatCard`, `NodeGraph`, `Cursor` |
 
+## Brief first, then build
+
+Before making or changing a video Claude says in 2–4 lines what it understood (subject, goal, main message, ending) and asks **one round** of up to 4 questions, each with its own recommendation preselected, so accepting everything takes one click per question:
+
+| Question | Why it is asked |
+|---|---|
+| Where will it play (9:16 / 16:9 / 1:1 · 4:5) | the frame changes every shot's composition; changing it later means rebuilding everything |
+| How long | length sets the beat count and the script: 15 s and 30 s are different videos |
+| Direction: 3 options, each = theme + 2–3 named moves + tempo | adjectives ("dynamic") mean different things to everyone; named moves don't |
+| Sound: voice + music / your track / music only / silent | voice and beats set shot lengths; changing sound later re-times the edit |
+| Assets & words, or "what must not change" when editing | brands and logos can't be invented; approved parts must survive an edit |
+
+Questions already answered by the prompt are skipped. Say "без вопросов" / "no questions" to skip the brief. Details: `references/brief.md`.
+
+## Motion lexicon: 144 names → kit
+
+"I can see it, but what is it called?" The lexicon gives every move a name, a live sample and the kit pieces that build it: 144 names from [motion-prompt](https://github.com/showheyohtaki/motion-prompt) (motion graphics, camera moves & cuts, UI, web effects, photo looks; MIT, © Shohei Ohtaki) plus an ae-motion layer: Russian names and requests, **mapping to kit components** (`≈` when the kit only gives a close look), energy 1–3 and the modes each move fits.
+
+- **Gallery:** https://burmalda-claude.github.io/ae-motion-claude/ — every name animated; search in Russian / English / Japanese or by `#043`, filter by set, mode, energy or "only from the kit", open a card for the timing spec and related moves, pick several, add a note and copy a ready prompt for Claude. Source: `docs/` (GitHub Pages, no build step).
+- **In Claude:** `/ae-motion:lexicon <description>`, or just name a move in a request; Claude searches with `tools/lexicon.py find` and uses the names in the brief's Direction options.
+- **Data:** `lexicon/motion-prompt/*.json` (upstream, untouched) + `lexicon/ae.json` (our layer). `python tools/lexicon.py` validates every kit name against the real exports and regenerates `references/lexicon.md` and `docs/lexicon.json`; `--check` fails on stale outputs.
+
 ## Commands / Modes
+
+Not sure where to start: `/ae-motion:help`.
 
 One command = the whole stack (effects, text presets, fonts, timing, beat/audio behavior, formats). Commands are namespaced: `/ae-motion:cinematic` (plain `/cinematic` also works when no other plugin uses that name). Presets live in `skills/motion-design/modes/<id>.json`.
 
@@ -91,6 +115,8 @@ See `references/sfx.md` → table of every suggested source with license and com
 
 References: DJordanMedia · Versely · SONNISS · AEscripts AI Scorpion SFX.
 
+Motion names, descriptions, specs and the animated samples of the lexicon: [motion-prompt](https://github.com/showheyohtaki/motion-prompt) by Shohei Ohtaki, MIT (license kept in `lexicon/motion-prompt/LICENSE` and `docs/vendor/motion-prompt/LICENSE`).
+
 ### What real edits do
 `references/edits-breakdown.md`: 28 TikTok edits measured frame by frame — ~7 cuts per 10 s, half of them on audio transients, ~2 whiteout flashes per 10 s, hit shakes, zoom punches, strobe flips, halation; music 108–144 BPM, very sub-heavy. These became `kit/editfx.tsx` and the `whiteout` / `blackDip` transitions. A second pass, `tools/transscan.py`, measured all 1 148 cuts and flashes in those edits (flash up 1 f / down 4 f, black 3 f, blur 6 f, dissolves only 4 f, an event every 8 f) and added 11 edit staples to the engine: `punchIn`, `exposure`, `invertCut`, `threshold`, `shrinkPop`, `push`, `pixelate`, `tvOff`, `hueShift`, `stutter`, `card` (demo: `examples/EditCuts.tsx`, 9:16).
 
@@ -101,15 +127,15 @@ A separate engine (`kit/cuts.tsx`, rules in `references/transitions.md`): a tran
 | Command | Category | Duration (frames) | Easing | Audio | Example |
 |---|---|---|---|---|---|
 | `/ae-motion:transition` | all | per cut | per kind | SFX on every transition frame | pick + place transitions for every cut of the video |
-| `/ae-motion:trans-clean` | Cut | 0 (dissolve 10 if the cut jumps) | — | thump on the cut | clean cut, dissolve only if the cut does not read |
-| `/ae-motion:trans-dissolve` | Dissolve | 6–12 | Ease | soft whoosh | cross / blur / 100→103% scale dissolve |
-| `/ae-motion:trans-wipe` | Wipe & Reveal | 12–14 | Ease | swish into the edge | circle/diagonal/panel, eye → moon match cut, track matte; always with an edge |
-| `/ae-motion:trans-speedramp` | Speed Ramp | ramp 12 | S-curve | whoosh on the cut | 100% → 45% → cut → 45% → 100%, no effect |
-| `/ae-motion:trans-beat` | any, on beats | 6–16 | per kind | beats.py: beats / downbeats / hits | beat analysis first, transitions centered on beats |
-| `/ae-motion:trans-morph` | Trend: morph text | 12–16 | S-curve | swish | letters melt into letters (MorphText) + liquid |
-| `/ae-motion:trans-glitch` | Atmospheric / phonk | 4–8 | Ease | glitch + impact on the hit | RGB split + slices + VHS + 1-frame invert |
-| `/ae-motion:trans-random` | smart | per kind | per kind | BPM + energy per beat | chooses by shot energy & BPM, never the same twice in a row |
-| `/ae-motion:trans-edit` | Edit staples (measured) | 3–10 | per kind | impact on the cut frame | punch-in, exposure flash, invert / 1-bit frames, shrink-pop, push, pixelate, TV-off, hue sweep, stutter, card |
+| `/ae-motion:transition clean` | Cut | 0 (dissolve 10 if the cut jumps) | — | thump on the cut | clean cut, dissolve only if the cut does not read |
+| `/ae-motion:transition dissolve` | Dissolve | 6–12 | Ease | soft whoosh | cross / blur / 100→103% scale dissolve |
+| `/ae-motion:transition wipe` | Wipe & Reveal | 12–14 | Ease | swish into the edge | circle/diagonal/panel, eye → moon match cut, track matte; always with an edge |
+| `/ae-motion:transition speedramp` | Speed Ramp | ramp 12 | S-curve | whoosh on the cut | 100% → 45% → cut → 45% → 100%, no effect |
+| `/ae-motion:transition beat` | any, on beats | 6–16 | per kind | beats.py: beats / downbeats / hits | beat analysis first, transitions centered on beats |
+| `/ae-motion:transition morph` | Trend: morph text | 12–16 | S-curve | swish | letters melt into letters (MorphText) + liquid |
+| `/ae-motion:transition glitch` | Atmospheric / phonk | 4–8 | Ease | glitch + impact on the hit | RGB split + slices + VHS + 1-frame invert |
+| `/ae-motion:transition random` | smart | per kind | per kind | BPM + energy per beat | chooses by shot energy & BPM, never the same twice in a row |
+| `/ae-motion:transition edit` | Edit staples (measured) | 3–10 | per kind | impact on the cut frame | punch-in, exposure flash, invert / 1-bit frames, shrink-pop, push, pixelate, TV-off, hue sweep, stutter, card |
 | `/ae-motion:trans-plan` | Planner (measured) | per kind | per kind | sfx per cut | `tools/transplan.py`: cuts on onsets, bursts of 2–5 of one kind, black + flash on the drop, camera life (`EditCam`) on every hit cut |
 | `/ae-motion:trans-learn` | Analysis | — | — | — | scan your reference edits (`tools/transscan.py`): every cut measured, review strips, mapped to kinds |
 
@@ -222,6 +248,7 @@ Claude picks the theme, writes the voice script, generates the voice-over with w
 ```
 ae-motion-claude/
 ├── .claude-plugin/marketplace.json
+├── docs/               ← lexicon gallery (GitHub Pages): index.html, lexicon.json, vendor/motion-prompt
 └── plugins/ae-motion/
     ├── .claude-plugin/plugin.json
     └── skills/motion-design/
@@ -229,7 +256,8 @@ ae-motion-claude/
         ├── kit/            ← easing, text, fx, kinetic, camera, transitions, ui, audio (+ index.ts)
         ├── tools/          ← build.py (script → voice, timing, SFX, music, master), sound.py (synths, DSP)
         ├── examples/       ← Trailer.tsx + trailer-script.json, KineticPromo.tsx, Showcase.tsx
-        └── references/{director,editing,reference-breakdown,themes,fonts,effects}.md
+        ├── lexicon/        ← motion-prompt packs (MIT) + ae.json (ru names, kit mapping, energy, modes)
+        └── references/{brief,director,lexicon,editing,transitions,themes,fonts,effects,…}.md
 ```
 
 ## Fonts
