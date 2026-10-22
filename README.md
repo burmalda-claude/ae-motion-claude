@@ -2,6 +2,8 @@
 
 [Русский](README.ru.md) | **English**
 
+> **0.11.0 is out (2026-10-22):** `/ae-motion:doctor`, download confirmation hook, `frame-reviewer` agent, CI, and the [site](https://burmalda-claude.github.io/ae-motion-claude/) now catalogs the whole plugin. See [CHANGELOG.md](CHANGELOG.md).
+
 A [Claude Code](https://claude.com/claude-code) plugin that teaches Claude to make videos that look like After Effects work — without After Effects. Videos are built in code with [Remotion](https://www.remotion.dev/) (React); the plugin turns a one-line prompt into a finished, AE-quality video: Claude directs it (script, pacing, theme) and builds it from a ready component kit, themes, fonts and editing rules.
 
 > **Not After Effects automation.** ae-motion does not open, script or render After Effects (no ExtendScript, UXP or `aerender`). It makes videos that *look* like After Effects work, in code: Remotion (React) for the picture, Python helpers for voice, sound and beat. You do not need After Effects installed.
