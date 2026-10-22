@@ -562,7 +562,7 @@ export function transition(kind: CutKind, opts: CutOptions = {}): { presentation
   return { presentation: comp[kind], timing: linearTiming({ durationInFrames: frames, easing: ease }), frames };
 }
 
-// ---------------------------------------------------------------- smart picker (/trans-random)
+// ---------------------------------------------------------------- smart picker (/transition random)
 export type Energy = "low" | "mid" | "high";
 export type CutContext = { from: Energy; to: Energy; bpm?: number; textToText?: boolean; timePasses?: boolean; matchShape?: { x: number; y: number }; onBeat?: boolean };
 /** Choose a transition from shot energy, BPM and intent — the clean cut first, effects only when motivated. */

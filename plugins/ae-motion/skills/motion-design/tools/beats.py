@@ -1,4 +1,4 @@
-"""Beat analysis for beat-synced transitions (/trans-beat, /trans-random).
+"""Beat analysis for beat-synced transitions (/transition beat, /transition random).
 
   python beats.py <audio> <project> [--fps 30]   -> <project>/src/beats.json
 

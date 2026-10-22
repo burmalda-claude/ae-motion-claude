@@ -275,7 +275,7 @@ const Beat: React.FC<ShotProps> = ({ dur }) => {
     <AbsoluteFill>
       <TransitionSeries>{items}</TransitionSeries>
       <div style={{ position: "absolute", left: 50, bottom: 50, fontFamily: MONO, fontSize: 30, color: "#fff", background: "rgba(0,0,0,0.65)", padding: "8px 18px", borderRadius: 10 }}>
-        /trans-beat · 140 BPM · {BEAT_KINDS[Math.max(0, HITS.indexOf(lastHit))]}
+        /transition beat · 140 BPM · {BEAT_KINDS[Math.max(0, HITS.indexOf(lastHit))]}
       </div>
     </AbsoluteFill>
   );
