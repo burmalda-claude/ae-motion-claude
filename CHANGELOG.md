@@ -2,7 +2,7 @@
 
 Versions follow [semver](https://semver.org/). While the major version is 0, a minor bump may remove or rename commands; every such change is listed under **Breaking** with a migration.
 
-## 0.11.0 — unreleased
+## 0.11.0 — 2026-10-22
 
 ### Added
 - `/ae-motion:doctor` + `tools/doctor.py`: read-only environment check (Python packages, Node.js, optional tools, Remotion add-ons, whether `src/kit/` matches the plugin's kit, `tsconfig` JSON imports, and a **Remotion version below 4.0.410**, which has critical advisories GHSA-2jqp-f4gr-44fr and GHSA-g6pc-6676-c23j).
