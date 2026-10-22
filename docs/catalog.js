@@ -238,7 +238,7 @@
     try { history.replaceState(null, "", tab === "moves" ? location.pathname : "#" + tab); } catch {}
   }
   document.addEventListener("click", e => {
-    const a = e.target.closest("#tabs a, a[data-mode]"); if (!a) return;
+    const a = e.target.closest("#tabs a, a[data-mode], #ver a"); if (!a) return;
     e.preventDefault();
     if (a.dataset.mode) { go("modes"); document.getElementById("mode-" + a.dataset.mode)?.scrollIntoView({ block: "start" }); }
     else { go(a.dataset.tab); scrollTo({ top: 0 }); }
@@ -252,7 +252,8 @@
 
   fetch("plugin.json").then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }).then(data => {
     D = data;
-    $("#ver").textContent = "v" + D.version;
+    const rel = D.changelog[0]?.version === D.version && D.changelog[0].date !== "unreleased";
+    $("#ver").innerHTML = `<a href="#start" data-tab="start" style="color:inherit">v${esc(D.version)}${rel ? " · " + esc(t("released")) : ""}</a>`;
     const n = { kit: D.kit.length, cuts: D.cuts.length, sound: D.sfx.categories.reduce((s, c) => s + c.specs.length, 0), fonts: D.fonts.length, commands: D.commands.length };
     document.querySelectorAll("[data-count]").forEach(s => s.textContent = n[s.dataset.count]);
     const h = location.hash.slice(1);

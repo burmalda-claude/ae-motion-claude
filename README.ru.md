@@ -2,6 +2,8 @@
 
 **Русский** | [English](README.md)
 
+> **Вышла версия 0.11.0 (2026-10-22):** `/ae-motion:doctor`, подтверждение загрузок, агент `frame-reviewer`, CI, а [сайт](https://burmalda-claude.github.io/ae-motion-claude/) теперь показывает весь плагин. Подробнее — [CHANGELOG.md](CHANGELOG.md).
+
 Плагин для [Claude Code](https://claude.com/claude-code), который учит Claude делать видео «как в After Effects» — без самого After Effects. Видео собирается кодом через [Remotion](https://www.remotion.dev/) (React), а плагин превращает промпт в одну строку в готовый ролик уровня AE: Claude сам режиссирует (сценарий, ритм, тема) и собирает его из готового набора компонентов, тем, шрифтов и правил монтажа.
 
 > **Это не автоматизация After Effects.** ae-motion не открывает, не скриптует и не рендерит After Effects (никакого ExtendScript, UXP или `aerender`). Он делает видео, которые *выглядят* как работа в After Effects, в коде: Remotion (React) для картинки, Python-помощники для голоса, звука и бита. Сам After Effects не нужен.
