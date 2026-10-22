@@ -2,6 +2,11 @@
 
 Versions follow [semver](https://semver.org/). While the major version is 0, a minor bump may remove or rename commands; every such change is listed under **Breaking** with a migration.
 
+## 0.12.0 — 2026-10-22
+
+### Added
+- `/ae-motion:head-lock`: keep a head in the centre of the frame. `tools/headtrack.py` finds every cut (1-frame impact inserts included), makes a sheet of each shot's middle frame with a 0..1 grid, then tracks one head box per shot (OpenCV TrackerMIL, forward and backward, smoothed inside the shot, never across a cut) → `head.json`. `<HeadLock>` (`kit/headlock.tsx`) moves the video so the head stays centred and tiles it, plain or mirrored, so the picture wraps around the edges instead of showing black. Works on live action, cartoons and anime (nothing is auto-detected). Self-test: `python tools/headtrack.py --selftest`.
+
 ## 0.11.0 — 2026-10-22
 
 ### Added

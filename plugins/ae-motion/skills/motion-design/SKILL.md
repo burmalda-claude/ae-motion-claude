@@ -48,6 +48,8 @@ After editing `lexicon/ae.json` or the kit, run `python tools/lexicon.py` (it va
 
 Use `kit/cuts.tsx` — read `references/transitions.md` before placing any transition. Clean cut first; `transition(kind)` inside `<TransitionSeries>` (automatic overlap); `pickTransition()` for the choice; `SpeedRampCut`, `MorphText` + `GooDefs`; `tools/beats.py` for beat-synced cuts. Commands: `/ae-motion:transition [clean|dissolve|wipe|glitch|morph|speedramp|beat|edit|random]` (no kind = smart pick per cut), `trans-plan`, `trans-learn`. Demos: `examples/Transitions.tsx`, `examples/EditCuts.tsx` (11 edit staples, 9:16).
 
+**Head lock** (`/ae-motion:head-lock`): `tools/headtrack.py` makes a sheet of every shot (cuts include 1-frame inserts), you read one head box per shot, it tracks (OpenCV TrackerMIL, both directions from the box, smoothed per shot) → `src/head.json`; `<HeadLock>` from `kit/headlock.tsx` moves the video so the head stays centred and tiles it (repeat or `mirror`) so the edges wrap instead of going black. Works on live action, cartoons and anime: nothing is auto-detected.
+
 ## Sync rules (what makes it feel edited, not generated)
 
 - **Every on-screen word lands on its spoken frame**: `delay={w(i)}`. Never hard-code word delays when there is a voice line.

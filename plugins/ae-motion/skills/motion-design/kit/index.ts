@@ -9,3 +9,4 @@ export * from "./audio";
 export * from "./modes";
 export * from "./cuts";
 export * from "./editfx";
+export * from "./headlock";
