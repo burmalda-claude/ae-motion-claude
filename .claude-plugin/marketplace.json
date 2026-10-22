@@ -1,11 +1,15 @@
 {
   "name": "ae-motion-local",
-  "owner": { "name": "local" },
+  "owner": {
+    "name": "burmalda-claude",
+    "url": "https://github.com/burmalda-claude"
+  },
   "plugins": [
     {
       "name": "ae-motion",
       "source": "./plugins/ae-motion",
-      "description": "After Effects-style motion design in Remotion: fonts, themes, effects, transitions."
+      "description": "Prompt → voiced After Effects-style video in Remotion: brief, motion lexicon, kinetic kit, transitions, procedural SFX and music."
     }
-  ]
+  ],
+  "description": "ae-motion: After Effects-style videos from one prompt, built in Remotion by Claude Code."
 }

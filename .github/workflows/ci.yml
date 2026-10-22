@@ -1,0 +1,95 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  plugin:
+    name: Plugin manifest and structure
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # Validation is local and needs no login. Pinned to the version this repo was checked with.
+      - run: npm install -g @anthropic-ai/claude-code@2.1.308
+      - run: claude plugin validate plugins/ae-motion
+      - run: claude plugin validate .
+
+  python:
+    name: Python tools (${{ matrix.python }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.10", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+          cache-dependency-path: plugins/ae-motion/skills/motion-design/tools/requirements.txt
+      - run: pip install -r plugins/ae-motion/skills/motion-design/tools/requirements.txt ruff
+      - name: Lint (pyflakes rules)
+        run: ruff check --select F plugins scripts
+      - name: Self-tests
+        working-directory: plugins/ae-motion/skills/motion-design/tools
+        run: |
+          python sound.py test
+          python sfxgen.py test
+          python transplan.py --selftest
+          python doctor.py --selftest
+          python site.py --selftest
+          python ../../../hooks/scripts/confirm_download.py --selftest
+      - name: Generated files are fresh
+        working-directory: plugins/ae-motion/skills/motion-design/tools
+        run: |
+          python lexicon.py --check
+          python site.py --check
+
+  kit:
+    name: Kit typecheck (Remotion, strict)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: ci/kit-typecheck/package-lock.json
+      - run: npm ci
+        working-directory: ci/kit-typecheck
+      - run: python3 scripts/check_kit_types.py
+
+  docs:
+    name: Docs and site consistency
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 scripts/check_docs.py
+
+  security:
+    name: Secrets and dependency audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Secret scan (gitleaks, full history)
+        run: docker run --rm -v "$PWD:/repo" ghcr.io/gitleaks/gitleaks:v8.18.4 detect --source /repo --no-banner --redact -v
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Python dependency audit
+        run: |
+          pip install pip-audit
+          pip-audit --progress-spinner off -r plugins/ae-motion/skills/motion-design/tools/requirements.txt -r plugins/ae-motion/skills/motion-design/tools/requirements-extra.txt
+      - name: npm audit (kit typecheck deps)
+        working-directory: ci/kit-typecheck
+        run: npm audit --audit-level=high

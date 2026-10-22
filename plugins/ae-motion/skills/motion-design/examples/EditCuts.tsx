@@ -4,7 +4,7 @@ import { AbsoluteFill, Img, staticFile, useCurrentFrame } from "remotion";
 import { TransitionSeries } from "@remotion/transitions";
 import { loadFont as loadAnton } from "@remotion/google-fonts/Anton";
 import { loadFont as loadMono } from "@remotion/google-fonts/JetBrainsMono";
-import { CutKind, DotGrid, Orb, transition } from "./kit";
+import { CutKind, DotGrid, Orb, transition } from "../kit";
 
 const { fontFamily: ANTON } = loadAnton();
 const { fontFamily: MONO } = loadMono("normal", { weights: ["700"], subsets: ["latin"] });

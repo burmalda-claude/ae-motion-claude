@@ -4,6 +4,8 @@
 
 Плагин для [Claude Code](https://claude.com/claude-code), который учит Claude делать видео «как в After Effects» — без самого After Effects. Видео собирается кодом через [Remotion](https://www.remotion.dev/) (React), а плагин превращает промпт в одну строку в готовый ролик уровня AE: Claude сам режиссирует (сценарий, ритм, тема) и собирает его из готового набора компонентов, тем, шрифтов и правил монтажа.
 
+> **Это не автоматизация After Effects.** ae-motion не открывает, не скриптует и не рендерит After Effects (никакого ExtendScript, UXP или `aerender`). Он делает видео, которые *выглядят* как работа в After Effects, в коде: Remotion (React) для картинки, Python-помощники для голоса, звука и бита. Сам After Effects не нужен.
+
 ## Что внутри
 
 Один скилл `motion-design`, который Claude подгружает сам, когда вы просите ролик, интро, титры, промо, reels и т.п. Вы пишете одну строку — Claude работает как режиссёр, моушн-дизайнер, монтажёр и звукорежиссёр.
@@ -48,7 +50,8 @@
 
 «Вижу, а как это называется?» Словарь даёт каждому движению имя, живой пример и компоненты kit, которыми оно собирается: 144 названия из [motion-prompt](https://github.com/showheyohtaki/motion-prompt) (моушн-графика, камера и склейки, UI, веб-эффекты, фото-свет и стиль; MIT, © Shohei Ohtaki) плюс слой ae-motion: русские названия и запросы, **привязка к компонентам kit** (`≈` — если kit даёт только похожий вид), энергия 1–3 и режимы, где приём уместен.
 
-- **Сайт:** https://burmalda-claude.github.io/ae-motion-claude/ — все названия в движении; поиск по-русски / по-английски / по-японски или по `#043`, фильтры по набору, режиму, энергии и «только из kit», карточка со спецификацией таймингов и похожими приёмами, подборка из нескольких приёмов + заметка → готовый промпт для Claude в один клик. Исходник: `docs/` (GitHub Pages, без сборки).
+- **Сайт:** https://burmalda-claude.github.io/ae-motion-claude/ — все названия в движении; поиск по-русски / по-английски / по-японски или по `#043`, фильтры по набору, режиму, энергии и «только из kit», карточка со спецификацией таймингов и похожими приёмами, подборка из нескольких приёмов + заметка → готовый промпт для Claude в один клик. Интерфейс на русском или английском (выбор запоминается в браузере). Примеры перерисованы в фирменном стиле ae-motion: графитовая сцена, акценты — янтарь ключевого кадра, красный, бирюза, кремовый, шрифты сайта. Их генерирует `tools/site.py` из оригинальных паков, вернуть оригинальный вид можно одним кликом. Фото-набор остаётся в своих цветах: там цвет и есть содержание. Исходник: `docs/` (GitHub Pages, без сборки).
+- **Весь плагин на том же сайте:** 18 режимов (палитра, шрифты, тайминги, стек эффектов, секции музыки), 155 экспортов kit с описаниями и перекрёстными ссылками (в каких режимах компонент и какие названия из словаря он собирает), 30 переходов — у каждого можно послушать звуковой стек, звуковой движок (52 синтезированных звука + жанровые паки), 14 тем с живыми образцами шрифтов, 23 шрифтовые пары, 30 команд. Всё генерируется из файлов плагина: `python tools/site.py` (`--check` падает, если данные устарели), поэтому сайт не может разойтись с плагином.
 - **В Claude:** `/ae-motion:lexicon <описание>` или просто назовите приём в запросе; Claude ищет через `tools/lexicon.py find` и использует названия в вариантах «Направления» на брифе.
 - **Данные:** `lexicon/motion-prompt/*.json` (оригинал, не тронут) + `lexicon/ae.json` (наш слой). `python tools/lexicon.py` проверяет, что каждый компонент реально есть в kit, и пересобирает `references/lexicon.md` и `docs/lexicon.json`; `--check` падает, если они устарели.
 
@@ -228,14 +231,48 @@
 
 ## Установка
 
+**Требования:** Claude Code, Node.js 18+, Python 3.10+. ffmpeg приходит вместе с пакетом `imageio-ffmpeg`. Проверено на Claude Code 2.1.308, Remotion 4.0.537, Python 3.10 и 3.13 под Linux; инструменты — обычный Python и Node, поэтому macOS и Windows должны работать, но в CI не проверяются.
+
 ```bash
+# установка
 claude plugin marketplace add burmalda-claude/ae-motion-claude
 claude plugin install ae-motion@ae-motion-local
+pip install numpy scipy librosa edge-tts imageio-ffmpeg   # = tools/requirements.txt; полный путь покажет /ae-motion:doctor
+
+# обновление (потом перезапустите Claude Code)
+claude plugin marketplace update ae-motion-local
+claude plugin update ae-motion@ae-motion-local
+
+# удаление
+claude plugin uninstall ae-motion@ae-motion-local
+claude plugin marketplace remove ae-motion-local
 ```
 
-Или из локальной папки: `claude plugin marketplace add ./ae-motion-claude`.
+Из локальной копии: `claude plugin marketplace add ./ae-motion-claude`. Дополнительно: `tools/requirements-extra.txt` (`faster-whisper` для режимов на вашем видео, `opencv` для `/ae-motion:trans-learn`, `yt-dlp` для скачивания музыки). Озвучке нужен интернет (Edge TTS).
 
-Нужны Node.js и Python 3 (`pip install edge-tts numpy scipy librosa imageio-ffmpeg`). Проект Remotion и пакеты Claude ставит сам. Для озвучки нужен интернет (Edge TTS); без него используется роботизированный офлайн-голос Windows.
+**Первый запуск:** `/ae-motion:doctor` (всё ли установлено), потом `/ae-motion:help` или просто опишите видео.
+
+## Что работает само и как это выключить
+
+| Что | Тип | Что делает | Как выключить |
+|---|---|---|---|
+| Подтверждение загрузок | hook (PreToolUse, Bash) | `yt-dlp`, а также `curl`/`wget` с сохранением файла, показывают запрос разрешения с причиной. Остальное проходит молча; без Python hook сам пропускается | `AE_MOTION_ALLOW_DOWNLOADS=1` или выключить плагин |
+| `/ae-motion:doctor` | команда + скрипт `tools/doctor.py` | проверка без изменений: пакеты, Node, дополнения Remotion, устаревший `src/kit/`, `tsconfig`, Remotion ниже 4.0.410 (критические уязвимости) | работает, только когда вы её вызываете |
+| `frame-reviewer` | агент | проверяет ключевые кадры по брифу и `timeline.json` в отдельном контексте; только отчёт, без правок | Claude зовёт его на длинных видео; скажите «без ревьюера» |
+| Бриф, режиссёр, словарь, режимы | инструкции для Claude | как Claude планирует и собирает; кодом не принуждается | скажите «без вопросов», чтобы пропустить бриф |
+
+Всё остальное (`build.py`, `sfxgen.py`, `beats.py`, `transplan.py`, `lexicon.py`) — скрипты, которые Claude запускает своими обычными инструментами, с вашими настройками разрешений. MCP-сервера нет: здесь он ничему не нужен.
+
+## Если что-то не работает
+
+- **Чего-то не хватает, падает импорт** → `/ae-motion:doctor` печатает исправление для каждой проблемы.
+- **«kit differs from the plugin»** → ваш `src/kit/` старее или изменён; скопируйте `kit/` плагина заново, если не правили его специально.
+- **Remotion ниже 4.0.410** → `npx remotion upgrade` (критические уязвимости, см. [SECURITY.md](SECURITY.md)).
+- **Пропала команда вроде `trans-wipe`** → с 0.10.0 это `/ae-motion:transition wipe` ([миграция](CHANGELOG.md)).
+- **Запрос разрешения на ожидаемую загрузку** → это hook; разрешите или задайте `AE_MOTION_ALLOW_DOWNLOADS=1`.
+- **Роботический голос** → Edge TTS нужен интернет; без него используется системный голос.
+
+Безопасность и приватность: [SECURITY.md](SECURITY.md) · Как помочь и проверки: [CONTRIBUTING.md](CONTRIBUTING.md) · Изменения: [CHANGELOG.md](CHANGELOG.md)
 
 ## Пример
 
@@ -248,9 +285,13 @@ Claude выберет тему, напишет текст озвучки, сге
 ```
 ae-motion-claude/
 ├── .claude-plugin/marketplace.json
+├── ci/, scripts/, .github/  ← CI only (kit typecheck, docs check)
 ├── docs/               ← сайт словаря (GitHub Pages): index.html, lexicon.json, vendor/motion-prompt
 └── plugins/ae-motion/
     ├── .claude-plugin/plugin.json
+    ├── commands/           ← /ae-motion:<name>
+    ├── agents/             ← frame-reviewer
+    ├── hooks/              ← download confirmation
     └── skills/motion-design/
         ├── SKILL.md
         ├── kit/            ← easing, text, fx, kinetic, camera, transitions, ui, audio (+ index.ts)
