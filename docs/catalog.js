@@ -3,16 +3,16 @@
   const $ = (s, r = document) => r.querySelector(s);
   const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const TABS = ["moves", "modes", "kit", "cuts", "sound", "themes", "fonts", "commands"];
-  const FILES = { "kinetic.tsx": "Кинетика", "text.tsx": "Текст", "fx.tsx": "Эффекты", "camera.tsx": "Камера", "cuts.tsx": "Переходы", "transitions.tsx": "Переходы (пресеты)", "editfx.tsx": "Эдит-эффекты", "modes.tsx": "Блоки режимов", "ui.tsx": "UI-моки", "audio.tsx": "Голос и звук", "easing.ts": "Изинг" };
+  const fileName = f => { const k = "files." + f, v = t(k); return v === k ? f : v; };
+  const L = window.LANG;
   const SECTION_COLOR = { intro: "#5b6b8c", build: "#b86a00", drop: "#c2362b", break: "#3f7f6a", ui: "#0f6f7a", stop: "#555c66" };
-  const CUT_CAT = { cut: "Склейка", dissolve: "Растворение", wipe: "Шторка", speed: "Скорость", atmospheric: "Атмосфера", trend: "Тренд 2026", edit: "Эдит" };
-  const GROUPS = { start: "С чего начать", mode: "Режимы", transition: "Переходы", sound: "Звук и музыка" };
+  const GROUPS = ["start", "mode", "transition", "sound"];
   let D, rendered = {};
 
   async function copy(text, btn) {
     const label = btn.textContent;
-    try { await navigator.clipboard.writeText(text); btn.textContent = "Скопировано"; }
-    catch { const ta = document.createElement("textarea"); ta.value = text; btn.after(ta); ta.select(); btn.textContent = "Выделено — Ctrl+C"; }
+    try { await navigator.clipboard.writeText(text); btn.textContent = t("copied"); }
+    catch { const ta = document.createElement("textarea"); ta.value = text; btn.after(ta); ta.select(); btn.textContent = t("selected"); }
     setTimeout(() => btn.textContent = label, 1600);
   }
   document.addEventListener("click", e => { const b = e.target.closest("[data-copy-text]"); if (b) copy(b.dataset.copyText, b); });
@@ -44,10 +44,9 @@
   const lbl = spec => spec.split(":")[1].split(",").filter(kv => !/^(len|gain|loop)=/.test(kv)).map(kv => kv.split("=")[1]).join(" ") || spec.split(":")[0];
   const play = (file, label) => file ? `<button class="play" type="button" data-play="${esc(file)}">${esc(label)}</button>` : "";
 
-  const lexChips = ids => ids.map(id => { const it = window.aeLex?.byId()[id]; return it ? `<button class="lx" type="button" data-lex="${id}">#${id} ${esc(it.name.ru)}</button>` : ""; }).join("");
+  const lexChips = ids => ids.map(id => { const it = window.aeLex?.byId()[id]; return it ? `<button class="lx" type="button" data-lex="${id}">#${id} ${esc(it.name[L])}</button>` : ""; }).join("");
   document.addEventListener("click", e => { const b = e.target.closest("[data-lex]"); if (b) window.aeLex?.open(b.dataset.lex); });
   const kitNames = () => new Set(D.kit.map(k => k.name));
-  const kitChip = name => kitNames().has(name) ? `<button class="k" type="button" data-kit="${esc(name)}">${esc(name)}</button>` : `<span class="k spec">${esc(name)}</span>`;
   document.addEventListener("click", e => {
     const b = e.target.closest("[data-kit]"); if (!b) return;
     go("kit");
@@ -58,11 +57,11 @@
   // ---------------------------------------------------------------- views
   const V = {
     modes(el) {
-      el.innerHTML = `<h2 class="sec">18 режимов</h2><p class="intro">Одна команда = весь стек: формат, палитра, шрифты, тайминги, эффекты, голос и музыка. Перед сборкой Claude задаёт короткий бриф — значения режима становятся рекомендуемыми ответами.</p><div class="cols"></div>`;
+      el.innerHTML = `<h2 class="sec">${t("modesH2")}</h2><p class="intro">${t("modesIntro")}</p><div class="cols"></div>`;
       $(".cols", el).innerHTML = D.modes.map(m => {
         const disp = familyIn(m.fonts?.display) || familyIn(Object.values(m.fonts || {}).join(" ")); font(disp);
-        const p = m.palette || {}, t = m.timing || {}, a = m.audio || {};
-        const fr = v => Array.isArray(v) ? `${v[0]}–${v[1]} к` : v != null ? `${v} к` : "—";
+        const p = m.palette || {}, tm = m.timing || {}, a = m.audio || {};
+        const fr = v => Array.isArray(v) ? `${v[0]}–${v[1]} ${t("fr")}` : v != null ? `${v} ${t("fr")}` : "—";
         return `<article class="panel" id="mode-${m.id}">
           <div class="band" style="background:${esc(p.bg)};color:${esc(p.text)}">
             <span class="sw">${Object.values(p).map(c => `<i style="background:${esc(c)}" title="${esc(c)}"></i>`).join("")}</span>
@@ -70,37 +69,37 @@
             <span style="color:${esc(p.accent)};font:600 12px var(--f-mono)">/ae-motion:${esc(m.id)}</span>
           </div>
           <div class="body">
-            <p class="meaning">${esc(m.purpose)}</p>
+            <p class="meaning">${esc(tr(m.purpose))}</p>
             <dl class="kv">
-              <dt>Формат</dt><dd>${(m.formats || []).join(" · ")}</dd>
-              <dt>Шрифты</dt><dd>${esc(Object.values(m.fonts || {}).join(" / "))}</dd>
-              <dt>Грейд</dt><dd>${esc(m.grade || "—")}</dd>
-              <dt>Шот</dt><dd class="mono">${fr(t.shot_f)} · вход ${fr(t.entrance_f)} · выход ${fr(t.exit_f)}${t.cuts_per_10s ? ` · ${t.cuts_per_10s} склеек/10 с` : ""}</dd>
-              <dt>Звук</dt><dd>${esc([a.musicStyle, a.bpm && a.bpm + " BPM", a.voice?.replace(/^\w\w-\w\w-|Neural$/g, "")].filter(Boolean).join(" · ")) || "голос по умолчанию, без музыки"}</dd>
+              <dt>${t("fmt")}</dt><dd>${(m.formats || []).join(" · ")}</dd>
+              <dt>${t("fontsL")}</dt><dd>${esc(Object.values(m.fonts || {}).join(" / "))}</dd>
+              <dt>${t("grade")}</dt><dd>${esc(m.grade || "—")}</dd>
+              <dt>${t("shot")}</dt><dd class="mono">${fr(tm.shot_f)} · ${t("entry")} ${fr(tm.entrance_f)} · ${t("exit")} ${fr(tm.exit_f)}${tm.cuts_per_10s ? ` · ${tm.cuts_per_10s} ${t("cutsPer10")}` : ""}</dd>
+              <dt>${t("soundL")}</dt><dd>${esc([a.musicStyle, a.bpm && a.bpm + " BPM", a.voice?.replace(/^\w\w-\w\w-|Neural$/g, "")].filter(Boolean).join(" · ")) || t("defVoice")}</dd>
             </dl>
-            ${a.sections?.length ? `<div class="sections" title="Секции музыки">${a.sections.map(s => `<span style="background:${SECTION_COLOR[s] || "#777"}">${esc(s)}</span>`).join("")}</div>` : ""}
+            ${a.sections?.length ? `<div class="sections" title="${t("sections")}">${a.sections.map(s => `<span style="background:${SECTION_COLOR[s] || "#777"}">${esc(s)}</span>`).join("")}</div>` : ""}
             <div class="chips">${(m.effects || []).map((e, i) => kitNames().has(m.effectsKit[i]) && e.startsWith(m.effectsKit[i]) ? `<button class="k" type="button" data-kit="${esc(m.effectsKit[i])}" title="${esc(e)}">${esc(e)}</button>` : `<span class="k spec">${esc(e)}</span>`).join("")}</div>
             ${m.text?.length ? `<p class="ask">${esc(m.text.join(" · "))}</p>` : ""}
-            <div class="actions"><button class="btn primary" type="button" data-copy-text="${esc(m.example || "/ae-motion:" + m.id + " ")}">Скопировать команду</button></div>
+            <div class="actions"><button class="btn primary" type="button" data-copy-text="${esc(m.example || "/ae-motion:" + m.id + " ")}">${t("copyCmd")}</button></div>
           </div></article>`;
       }).join("");
     },
 
     kit(el) {
       const files = [...new Set(D.kit.map(k => k.file))];
-      el.innerHTML = `<h2 class="sec">${D.kit.length} экспортов kit</h2><p class="intro">Компоненты Remotion и хелперы из <code class="mono">kit/</code>. У каждого — в каких режимах он в стеке эффектов и какие названия из словаря им собираются.</p>
-        <div class="toolbar"><label class="search" for="kq"><span aria-hidden="true">⌕</span><input id="kq" type="search" placeholder="Camera, glitch, текст…" autocomplete="off"></label>
-        <button class="chip" type="button" aria-pressed="true" data-f="">Все</button>${files.map(f => `<button class="chip" type="button" aria-pressed="false" data-f="${f}">${FILES[f] || f}</button>`).join("")}
-        <button class="chip" type="button" aria-pressed="false" id="konly">Только компоненты</button></div><div class="rows"></div>`;
+      el.innerHTML = `<h2 class="sec">${t("kitH2", D.kit.length)}</h2><p class="intro">${t("kitIntro")}</p>
+        <div class="toolbar"><label class="search" for="kq"><span aria-hidden="true">⌕</span><input id="kq" type="search" placeholder="${t("kitPh")}" autocomplete="off"></label>
+        <button class="chip" type="button" aria-pressed="true" data-f="">${t("all")}</button>${files.map(f => `<button class="chip" type="button" aria-pressed="false" data-f="${f}">${fileName(f)}</button>`).join("")}
+        <button class="chip" type="button" aria-pressed="false" id="konly">${t("onlyComp")}</button></div><div class="rows"></div>`;
       const st = { q: "", f: "", only: false };
       const draw = () => {
         const q = st.q.toLowerCase();
         const list = D.kit.filter(k => (!st.f || k.file === st.f) && (!st.only || k.role === "component") && (!q || (k.name + " " + k.doc).toLowerCase().includes(q)));
         $(".rows", el).innerHTML = list.map(k => `<div class="rowi" id="kit-${esc(k.name)}">
-          <div><code>${esc(k.name)}</code><div class="chips" style="margin-top:4px"><span class="tag">${esc(FILES[k.file] || k.file)}</span>${k.role === "helper" ? `<span class="tag">хелпер</span>` : ""}</div></div>
+          <div><code>${esc(k.name)}</code><div class="chips" style="margin-top:4px"><span class="tag">${esc(fileName(k.file))}</span>${k.role === "helper" ? `<span class="tag">${t("helper")}</span>` : ""}</div></div>
           <div class="meta"><p class="doc">${esc(k.doc || "—")}</p>
             ${k.modes.length ? `<div class="chips">${k.modes.map(m => `<a class="k" href="#modes" data-mode="${m}">/${m}</a>`).join("")}</div>` : ""}
-            ${k.lexicon.length ? `<div class="chips">${lexChips(k.lexicon)}</div>` : ""}</div></div>`).join("") || `<p class="empty">Ничего не нашлось.</p>`;
+            ${k.lexicon.length ? `<div class="chips">${lexChips(k.lexicon)}</div>` : ""}</div></div>`).join("") || `<p class="empty">${t("nothing")}</p>`;
       };
       $("#kq", el).oninput = e => { st.q = e.target.value; draw(); };
       el.querySelectorAll("[data-f]").forEach(b => b.onclick = () => { st.f = b.dataset.f; el.querySelectorAll("[data-f]").forEach(x => x.setAttribute("aria-pressed", String(x === b))); draw(); });
@@ -110,72 +109,72 @@
 
     cuts(el) {
       const lex = Object.values(window.aeLex?.byId() || {});
-      el.innerHTML = `<h2 class="sec">${D.cuts.length} переходов</h2><p class="intro">Движок <code class="mono">kit/cuts.tsx</code>: <code class="mono">transition(kind)</code> внутри <code class="mono">&lt;TransitionSeries&gt;</code>, перекрытие автоматически. Кнопка проигрывает звук перехода — стек из 2–3 слоёв, сведённый так, как его ставит движок: свисты заканчиваются на склейке, удары начинаются с неё.</p><div class="cols"></div>`;
+      el.innerHTML = `<h2 class="sec">${t("cutsH2", D.cuts.length)}</h2><p class="intro">${t("cutsIntro")}</p><div class="cols"></div>`;
       $(".cols", el).innerHTML = D.cuts.map(c => {
         const names = lex.filter(it => it.kit.some(k => k.replace("~", "") === "cut:" + c.kind)).map(it => it.id);
         return `<article class="panel"><div class="body">
-          <div class="eyebrow"><span>${esc(CUT_CAT[c.category] || c.category)}</span><span>${c.frames ? c.frames + " к" : "0 к"}${c.ease && c.ease !== "—" ? " · " + esc(c.ease) : ""}</span></div>
+          <div class="eyebrow"><span>${esc(t("cat." + c.category))}</span><span>${c.frames || 0} ${t("fr")}${c.ease && c.ease !== "—" ? " · " + esc(c.ease) : ""}</span></div>
           <h3 class="name"><code class="mono" style="font-size:17px">transition("${esc(c.kind)}")</code></h3>
-          <p class="meaning">${esc(c.use)}</p>
-          ${c.layers.length ? `<div class="chips">${c.layers.map(l => `<span class="k" title="слой звука">${esc(l)}</span>`).join("")}</div>` : ""}
+          <p class="meaning">${esc(tr(c.use))}</p>
+          ${c.layers.length ? `<div class="chips">${c.layers.map(l => `<span class="k" title="${t("soundLayer")}">${esc(l)}</span>`).join("")}</div>` : ""}
           ${names.length ? `<div class="chips">${lexChips(names)}</div>` : ""}
-          <div class="actions">${play(c.sound, "звук перехода")}<button class="btn" type="button" data-copy-text='/ae-motion:transition ${esc(c.kind)}'>Копировать</button></div>
+          <div class="actions">${play(c.sound, t("cutSound"))}<button class="btn" type="button" data-copy-text='/ae-motion:transition ${esc(c.kind)}'>${t("copy")}</button></div>
         </div></article>`;
       }).join("");
     },
 
     sound(el) {
       const cats = D.sfx.categories, n = cats.reduce((s, c) => s + c.specs.length, 0);
-      el.innerHTML = `<h2 class="sec">Звуковой движок</h2><p class="intro">Все звуки ниже синтезированы движком плагина (<code class="mono">tools/sfxgen.py</code>) — без сэмплов и лицензий, бесконечные вариации через <code class="mono">seed</code>. Спецификацию можно вставить в <code class="mono">script.json</code> как звуковую метку. ${n} примеров.</p>
+      el.innerHTML = `<h2 class="sec">${t("soundH2")}</h2><p class="intro">${t("soundIntro", n)}</p>
         ${cats.map(c => `<section class="panel"><div class="body">
-          <div class="eyebrow"><span>${esc(c.name)}</span><span>${c.specs.length}</span></div>
+          <div class="eyebrow"><span>${esc(tr(c.name))}</span><span>${c.specs.length}</span></div>
           ${c.params ? `<p class="ask" style="font-style:normal">${esc(c.params)}</p>` : ""}
-          <div class="chips">${c.specs.map((s, i) => `<span style="display:inline-flex;gap:4px;align-items:center">${play(c.files[i], lbl(s))}<button class="k" type="button" data-copy-text="${esc(s)}" title="Копировать спецификацию">${esc(s)}</button></span>`).join("")}</div>
+          <div class="chips">${c.specs.map((s, i) => `<span style="display:inline-flex;gap:4px;align-items:center">${play(c.files[i], lbl(s))}<button class="k" type="button" data-copy-text="${esc(s)}" title="${t("copySpec")}">${esc(s)}</button></span>`).join("")}</div>
         </div></section>`).join("")}
-        <h2 class="sec">Жанровые паки</h2><p class="intro"><code class="mono">/ae-motion:sfx-pack &lt;жанр&gt;</code> собирает готовый набор под жанр.</p>
+        <h2 class="sec">${t("packsH2")}</h2><p class="intro">${t("packsIntro")}</p>
         <div class="cols">${Object.entries(D.sfx.packs).map(([name, list]) => `<article class="panel"><div class="body"><div class="eyebrow"><span>${esc(name)}</span><span>${list.length}</span></div>
           <div class="chips">${list.map(x => x.file ? play(x.file, lbl(x.spec)) : `<span class="k spec">${esc(x.spec)}</span>`).join("")}</div>
-          <div class="actions"><button class="btn" type="button" data-copy-text="/ae-motion:sfx-pack ${esc(name)}">Копировать команду</button></div></div></article>`).join("")}</div>`;
+          <div class="actions"><button class="btn" type="button" data-copy-text="/ae-motion:sfx-pack ${esc(name)}">${t("copyCmd")}</button></div></div></article>`).join("")}</div>`;
     },
 
     themes(el) {
-      el.innerHTML = `<h2 class="sec">14 тем</h2><p class="intro">Тема = палитра + шрифты + характер движения. Claude выбирает её по смыслу ролика, на брифе предлагает три направления.</p><div class="cols"></div>`;
-      $(".cols", el).innerHTML = D.themes.map(t => {
-        const [bg, , ] = t.palette, fg = t.palette.find(s => /text|white|paper/i.test(s.label)) || t.palette[1], acc = t.palette.find(s => /accent|red|acid|pink|yellow/i.test(s.label)) || t.palette[t.palette.length - 1];
-        const head = familyIn(t.fonts); font(head);
-        const rest = D.families.filter(f => f !== head && t.fonts.includes(f)); const body = rest[0]; font(body);
+      el.innerHTML = `<h2 class="sec">${t("themesH2")}</h2><p class="intro">${t("themesIntro")}</p><div class="cols"></div>`;
+      $(".cols", el).innerHTML = D.themes.map(th => {
+        const [bg] = th.palette, fg = th.palette.find(s => /text|white|paper/i.test(s.label)) || th.palette[1], acc = th.palette.find(s => /accent|red|acid|pink|yellow/i.test(s.label)) || th.palette[th.palette.length - 1];
+        const head = familyIn(th.fonts); font(head);
+        const rest = D.families.filter(f => f !== head && th.fonts.includes(f)); const body = rest[0]; font(body);
         return `<article class="panel">
           <div class="band" style="background:${esc(bg?.hex)};color:${esc(fg?.hex)}">
-            <span class="big" style="${ff(head)};font-weight:900">${esc(t.name.split(" (")[0])}</span>
-            <span style="${ff(body)};font-size:15px">Один промпт — <span style="color:${esc(acc?.hex)}">готовое видео</span></span>
+            <span class="big" style="${ff(head)};font-weight:900">${esc(th.name.split(" (")[0])}</span>
+            <span style="${ff(body)};font-size:15px">${t("sample1")}<span style="color:${esc(acc?.hex)}">${t("sample2")}</span></span>
           </div>
           <div class="body">
-            <div class="chips">${t.palette.map(s => `<button class="k" type="button" data-copy-text="${esc(s.hex)}" style="background:${esc(s.hex)};color:${luma(s.hex) > 0.55 ? "#111" : "#fff"}" title="${esc(s.label)}">${esc(s.label)} ${esc(s.hex)}</button>`).join("")}</div>
-            <dl class="kv"><dt>Шрифты</dt><dd>${esc(t.fonts)}</dd><dt>Движение</dt><dd>${esc(t.motion)}</dd></dl>
-            <div class="actions"><button class="btn" type="button" data-copy-text="Тема ${esc(t.name)} (references/themes.md)">Копировать для промпта</button></div>
+            <div class="chips">${th.palette.map(s => `<button class="k" type="button" data-copy-text="${esc(s.hex)}" style="background:${esc(s.hex)};color:${luma(s.hex) > 0.55 ? "#111" : "#fff"}" title="${esc(s.label)}">${esc(s.label)} ${esc(s.hex)}</button>`).join("")}</div>
+            <dl class="kv"><dt>${t("fontsL")}</dt><dd>${esc(th.fonts)}</dd><dt>${t("motion")}</dt><dd>${esc(th.motion)}</dd></dl>
+            <div class="actions"><button class="btn" type="button" data-copy-text="${esc(t("themeCopy", th.name))}">${t("copyForPrompt")}</button></div>
           </div></article>`;
       }).join("");
     },
 
     fonts(el) {
-      el.innerHTML = `<h2 class="sec">${D.fonts.length} шрифтовых пар</h2><p class="intro">Все — Google Fonts (OFL), подгружаются при рендере. Для русского текста берите пары с кириллицей; если её нет, в скобках — замена.</p>
-        <div class="tablewrap"><table class="t"><thead><tr><th>Стиль</th><th>Заголовок</th><th>Текст</th><th>Кириллица</th></tr></thead><tbody></tbody></table></div>`;
+      el.innerHTML = `<h2 class="sec">${t("fontsH2", D.fonts.length)}</h2><p class="intro">${t("fontsIntro")}</p>
+        <div class="tablewrap"><table class="t"><thead><tr><th>${t("style")}</th><th>${t("headline")}</th><th>${t("body")}</th><th>${t("cyr")}</th></tr></thead><tbody></tbody></table></div>`;
       $("tbody", el).innerHTML = D.fonts.map(r => {
         const h = familyIn(r.headline), b = familyIn(r.body); font(h); font(b);
         const cyr = /^yes/i.test(r.cyr);
         return `<tr><td>${esc(r.style)}</td>
-          <td><p class="spec-line" style="${ff(h)};font-weight:${/italic/.test(r.headline) ? "700;font-style:italic" : 800}">${cyr ? "Съешь ещё булок" : "Motion design"}</p><span class="tag">${esc(r.headline)}</span></td>
-          <td><p style="${ff(b)};margin:0 0 4px">${cyr ? "Видео из одной строки" : "Video from one line"}</p><span class="tag">${esc(r.body)}</span></td>
-          <td>${esc(r.cyr.replace(/\byes\b/g, "да").replace(/\bno\b/g, "нет"))}</td></tr>`;
+          <td><p class="spec-line" style="${ff(h)};font-weight:${/italic/.test(r.headline) ? "700;font-style:italic" : 800}">${cyr ? t("specimenH") : "Motion design"}</p><span class="tag">${esc(r.headline)}</span></td>
+          <td><p style="${ff(b)};margin:0 0 4px">${cyr ? t("specimenB") : "Video from one line"}</p><span class="tag">${esc(r.body)}</span></td>
+          <td>${esc(r.cyr.replace(/\byes\b/g, t("yes")).replace(/\bno\b/g, t("no")))}</td></tr>`;
       }).join("");
     },
 
     commands(el) {
-      el.innerHTML = `<h2 class="sec">${D.commands.length} команд</h2><p class="intro">Все команды пишутся как <code class="mono">/ae-motion:&lt;имя&gt;</code>. Не знаете, с чего начать — <code class="mono">/ae-motion:help</code>.</p>` +
-        Object.entries(GROUPS).map(([g, title]) => `<h2 class="sec" style="font-size:16px">${title}</h2><div class="rows">${D.commands.filter(c => c.group === g).map(c => `<div class="rowi">
+      el.innerHTML = `<h2 class="sec">${t("cmdsH2", D.commands.length)}</h2><p class="intro">${t("cmdsIntro")}</p>` +
+        GROUPS.map(g => `<h2 class="sec" style="font-size:16px">${t("grp." + g)}</h2><div class="rows">${D.commands.filter(c => c.group === g).map(c => `<div class="rowi">
           <div><code>/ae-motion:${esc(c.name)}</code></div>
-          <div class="meta"><p class="doc">${esc(c.description)}</p>${c.hint ? `<span class="tag" style="justify-self:start">${esc(c.hint)}</span>` : ""}
-          <div class="actions" style="padding:0"><button class="btn" type="button" data-copy-text="/ae-motion:${esc(c.name)} ">Копировать</button></div></div></div>`).join("")}</div>`).join("");
+          <div class="meta"><p class="doc">${esc(tr(c.description))}</p>${c.hint ? `<span class="tag" style="justify-self:start">${esc(c.hint)}</span>` : ""}
+          <div class="actions" style="padding:0"><button class="btn" type="button" data-copy-text="/ae-motion:${esc(c.name)} ">${t("copy")}</button></div></div></div>`).join("")}</div>`).join("");
     },
   };
   const luma = hex => { const n = parseInt(hex.slice(1), 16); return (0.299 * (n >> 16) + 0.587 * (n >> 8 & 255) + 0.114 * (n & 255)) / 255; };
