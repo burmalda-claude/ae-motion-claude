@@ -227,6 +227,12 @@ def restyled():
     return out
 
 
+def changelog():
+    """CHANGELOG.md sections as [{version, date, body}] — the site shows them as they are written."""
+    text = (DOCS.parent / "CHANGELOG.md").read_text()
+    return [{"version": v, "date": d, "body": body.strip()} for v, d, body in re.findall(r"^## ([\w.]+) — ([^\n]+)\n(.*?)(?=^## |\Z)", text, re.S | re.M)]
+
+
 def build(check=False):
     items = L.load()
     L.validate(items)
@@ -249,6 +255,7 @@ def build(check=False):
         "version": json.loads((PLUGIN / ".claude-plugin" / "plugin.json").read_text())["version"],
         "modes": modes, "commands": commands(), "kit": k, "cuts": cuts(files), "themes": themes(),
         "fonts": font_rows, "families": font_families(font_rows),
+        "changelog": changelog(),
         "sfx": {"categories": cats, "packs": {n: [{"spec": s, "file": files.get(s)} for s in v] for n, v in packs.items()}},
     }
     return json.dumps(data, ensure_ascii=False, separators=(",", ":")), missing
@@ -281,5 +288,6 @@ if __name__ == "__main__":
         p.parent.mkdir(exist_ok=True)
         p.write_text(t)
     d = json.loads(text)
+    assert d["changelog"] and d["changelog"][0]["version"] == d["version"], "CHANGELOG.md top section must match plugin.json version"
     assert len(d["modes"]) == 18 and len(d["themes"]) == 14 and len(d["cuts"]) >= 30 and len(d["kit"]) > 100, "catalog looks incomplete"
     print(f"wrote {out}: {len(d['modes'])} modes, {len(d['commands'])} commands, {len(d['kit'])} kit exports, {len(d['cuts'])} cuts, {len(d['themes'])} themes, {len(d['fonts'])} font pairs")

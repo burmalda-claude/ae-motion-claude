@@ -1,0 +1,4 @@
+# Optional, per feature
+faster-whisper>=1.0      # transcribe.py: modes on your own media (lyric, clip, reaction, gaming)
+opencv-python-headless>=4.8  # transscan.py: /ae-motion:trans-learn
+yt-dlp>=2024.1.1         # /ae-motion:music-find downloads (always asks first)

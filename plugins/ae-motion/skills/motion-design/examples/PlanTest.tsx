@@ -2,7 +2,7 @@
 import React from "react";
 import { AbsoluteFill, Sequence, interpolate, useCurrentFrame } from "remotion";
 import plan from "./trans-plan.json"; // tools/transplan.py output (sample: trans-plan.example.json)
-import { BloomFlash, DotGrid, EditCam, HitShake, Orb } from "./kit";
+import { BloomFlash, DotGrid, EditCam, HitShake, Orb } from "../kit";
 
 export const PLAN_TEST_DURATION = plan.total;
 type Shot = (typeof plan.shots)[number];

@@ -10,16 +10,19 @@ You are the motion designer, editor **and** sound designer. The user gives one l
 ## Workflow
 
 1. **Brief** — read `references/brief.md` and run it before creating or changing any video: say in 2–4 lines what you understood, then one `AskUserQuestion` round (frame, length, direction, sound…) with your recommendation preselected. Skip only if the user said "без вопросов" / "no questions".
+Environment problems (missing Python packages, old Node, stale `src/kit/`): run `tools/doctor.py` (`/ae-motion:doctor`) before guessing.
+
 2. **Direct** — read `references/director.md`. Fold in the answers, pick a theme (`references/themes.md`) and fonts (`references/fonts.md`), write the script as beats. Print a 3–5 line plan.
 3. **Set up the project** (if there is none):
    - `npx create-video@latest` → Blank template, then `npm i`.
+   - Python packages: `pip install -r tools/requirements.txt` (optional features: `tools/requirements-extra.txt`).
    - Copy `kit/` from this skill into `src/kit/`; copy `tools/` anywhere (they are Python scripts).
    - `npx remotion add @remotion/google-fonts @remotion/transitions @remotion/noise @remotion/paths @remotion/layout-utils`
    - tsconfig: `"resolveJsonModule": true` (voice timings are imported as JSON).
 4. **Script** — write `script.json` (format in `tools/build.py` docstring; full example `examples/trailer-script.json`): one beat per shot with `text` (what is spoken = what is on screen), `lead`/`tail`/`min` frames, `sfx` cues tied to words (`["impact", "w0"]`, `["riser", "end"]`), and a `music` mode where the energy changes (`intro | drop | build | break | ui | stop`). Text the TTS would mispronounce (English brand names in a Russian script) — write phonetically in `text`, keep the real spelling on screen.
-5. **Build audio + timing** — `pip install edge-tts numpy scipy librosa imageio-ffmpeg` once, then `python tools/build.py script.json .` → neural voice per line (default `en-US-BrianMultilingualNeural`: most expressive, speaks Russian cleanly), trimmed + broadcast voice chain, `src/timeline.json` with every word's frame, synthesized SFX on cues, an arranged 123-BPM bed with sidechain pumping and ducking under the voice, mastered to −14 LUFS / −1 dBTP → `public/audio/master.wav` (+ stems). Re-run after any script change; TTS is cached.
+5. **Build audio + timing** — `pip install -r tools/requirements.txt` once, then `python tools/build.py script.json .` → neural voice per line (default `en-US-BrianMultilingualNeural`: most expressive, speaks Russian cleanly), trimmed + broadcast voice chain, `src/timeline.json` with every word's frame, synthesized SFX on cues, an arranged 123-BPM bed with sidechain pumping and ducking under the voice, mastered to −14 LUFS / −1 dBTP → `public/audio/master.wav` (+ stems). Re-run after any script change; TTS is cached.
 6. **Build visuals** — one component per beat receiving `ShotProps` (`w(i)` = frame word *i* starts, `we(i)`, `dur`). Wrap each in `<Exit dur kind>` (3–5 f exits: `zoom`, `streakY`, `streakX`, `slice`, `whipL/R`, `spin`, `drop`), map ids → components, render `<TimelineShots timeline={timelineJson} shots={SHOTS} />` (it also plays the master). Mount `<ChromaDefs />` once. **Reference implementation: `examples/Trailer.tsx` + `examples/trailer-script.json`** — read it first; it is the quality bar.
-7. **Check** — render stills of 4–6 key frames (`npx remotion still <Id> --frame=<n> out/c<n>.png`) and Read them. Fix overflow, empty frames, wrong fonts, words appearing before they are spoken.
+7. **Check** — render stills of 4–6 key frames (`npx remotion still <Id> --frame=<n> out/c<n>.png`) and Read them, or for videos over 15 s hand them to the `frame-reviewer` agent (stills + frame numbers + plan + `src/timeline.json`) to keep the images out of this context. Fix overflow, empty frames, wrong fonts, words appearing before they are spoken.
 8. **Render** — `npx remotion render <Id> out/video.mp4 --concurrency=50%`. Tell the user where the file is.
 
 ## Motion lexicon: names → kit

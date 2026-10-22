@@ -8,6 +8,23 @@
   const UI = {
     ru: {
       title: "Каталог ae-motion",
+      "tab.start": "Старт", startH2: "Быстрый старт", startIntro: "ae-motion — плагин для Claude Code. Он не автоматизирует After Effects и не требует его: видео собирается в коде (Remotion), голос, звук и бит — Python-помощниками.",
+      reqH: "Что нужно", req: "Claude Code, Node.js 18+, Python 3.10+. ffmpeg приходит с пакетом imageio-ffmpeg. Озвучке нужен интернет (Edge TTS).",
+      installH: "Установка", updateH: "Обновление (затем перезапустите Claude Code)", removeH: "Удаление", firstH: "Первый запуск",
+      first: "<code class=\"mono\">/ae-motion:doctor</code> проверит окружение и напишет, что поставить. Потом <code class=\"mono\">/ae-motion:help</code> или просто опишите видео: Claude перескажет задачу, задаст пару вопросов в один клик и соберёт ролик.",
+      autoH: "Что работает само", autoName: "Что", autoKind: "Тип", autoWhat: "Что делает", autoOff: "Как выключить",
+      auto1: ["Подтверждение загрузок", "hook", "yt-dlp и curl/wget с сохранением файла спрашивают разрешение. Остальное проходит молча.", "AE_MOTION_ALLOW_DOWNLOADS=1"],
+      auto2: ["/ae-motion:doctor", "команда + скрипт", "Проверка без изменений: пакеты, Node, дополнения Remotion, устаревший src/kit, tsconfig, Remotion ниже 4.0.410 (критические уязвимости).", "запускается только по вызову"],
+      auto3: ["frame-reviewer", "агент", "Проверяет ключевые кадры по брифу в отдельном контексте. Только отчёт.", "скажите «без ревьюера»"],
+      auto4: ["Бриф, словарь, режимы", "инструкции для Claude", "Как Claude планирует и собирает. Кодом не принуждается.", "скажите «без вопросов»"],
+      faqH: "Частые вопросы",
+      faq: [["Нужен ли After Effects?", "Нет. Плагин делает видео в стиле After Effects кодом и ничего в AE не запускает."],
+            ["Пропала команда trans-wipe и похожие", "С 0.10.0 это /ae-motion:transition wipe (и clean, dissolve, glitch, morph, speedramp, beat, edit, random)."],
+            ["Падает импорт или чего-то не хватает", "Запустите /ae-motion:doctor — он печатает исправление для каждой проблемы."],
+            ["Doctor пишет про Remotion ниже 4.0.410", "У этих версий критические уязвимости. Обновите: npx remotion upgrade."],
+            ["Можно без вопросов?", "Да: напишите «без вопросов» — Claude перечислит допущения и начнёт сразу."],
+            ["Куда уходят мои данные?", "Текст озвучки — в Microsoft Edge TTS; музыка и звуки скачиваются только после вашего подтверждения; ключ ElevenLabs читается только из переменной окружения. Подробно — SECURITY.md."]],
+      linksH: "Ссылки", changesH: "Что нового", unreleased: "не выпущено",
       lead: 'Плагин для Claude Code, который делает видео уровня After Effects из одной строки. Здесь всё, что у него внутри: <b>названия движений</b> с живыми примерами, <b>режимы</b>, <b>компоненты</b>, <b>переходы</b>, <b>звуки</b>, темы и шрифты. Отметьте нужное, допишите задачу и вставьте готовый промпт в Claude Code.',
       tabs: "Разделы", "tab.moves": "Движения", "tab.modes": "Режимы", "tab.kit": "Компоненты", "tab.cuts": "Переходы", "tab.sound": "Звук", "tab.themes": "Темы", "tab.fonts": "Шрифты", "tab.commands": "Команды",
       searchPh: "вип-пан, тряска, glitch, #043…", modeAria: "Режим ae-motion", allModes: "Все режимы", energy: "Энергия", anyEnergy: "Любая энергия", e1: "Спокойно", e2: "Средне", e3: "Жёстко",
@@ -37,6 +54,23 @@
     },
     en: {
       title: "ae-motion catalog",
+      "tab.start": "Start", startH2: "Quick start", startIntro: "ae-motion is a Claude Code plugin. It does not automate or need After Effects: the video is built in code (Remotion), voice, sound and beat by Python helpers.",
+      reqH: "Requirements", req: "Claude Code, Node.js 18+, Python 3.10+. ffmpeg comes with the imageio-ffmpeg package. Voice-over needs internet (Edge TTS).",
+      installH: "Install", updateH: "Update (then restart Claude Code)", removeH: "Remove", firstH: "First run",
+      first: "<code class=\"mono\">/ae-motion:doctor</code> checks the environment and tells you what to install. Then <code class=\"mono\">/ae-motion:help</code>, or just describe the video: Claude restates the task, asks a few one-click questions and builds it.",
+      autoH: "What runs by itself", autoName: "Piece", autoKind: "Kind", autoWhat: "What it does", autoOff: "Turn off",
+      auto1: ["Download confirmation", "hook", "yt-dlp, and curl/wget that save a file, ask for permission. Everything else passes silently.", "AE_MOTION_ALLOW_DOWNLOADS=1"],
+      auto2: ["/ae-motion:doctor", "command + script", "Read-only check: packages, Node, Remotion add-ons, stale src/kit, tsconfig, Remotion below 4.0.410 (critical advisories).", "runs only when called"],
+      auto3: ["frame-reviewer", "agent", "Reviews key frames against the brief in its own context. Reports only.", "say \"no reviewer\""],
+      auto4: ["Brief, lexicon, modes", "instructions for Claude", "How Claude plans and builds. Not enforced by code.", "say \"no questions\""],
+      faqH: "FAQ",
+      faq: [["Do I need After Effects?", "No. The plugin makes After Effects-style video in code and runs nothing in AE."],
+            ["The trans-wipe command and similar are gone", "Since 0.10.0 they are /ae-motion:transition wipe (and clean, dissolve, glitch, morph, speedramp, beat, edit, random)."],
+            ["An import fails or something is missing", "Run /ae-motion:doctor: it prints the fix for each problem."],
+            ["Doctor reports Remotion below 4.0.410", "Those versions have critical advisories. Upgrade: npx remotion upgrade."],
+            ["Can it skip the questions?", "Yes: say \"no questions\" and Claude lists its assumptions and starts."],
+            ["Where does my data go?", "Voice-over text goes to Microsoft Edge TTS; music and sounds are downloaded only after you confirm; the ElevenLabs key is read only from an environment variable. Details in SECURITY.md."]],
+      linksH: "Links", changesH: "What's new", unreleased: "unreleased",
       lead: 'A Claude Code plugin that turns one line into an After Effects-quality video. Everything inside it is here: <b>motion names</b> with live samples, <b>modes</b>, <b>components</b>, <b>transitions</b>, <b>sounds</b>, themes and fonts. Pick what you need, add your task and paste the ready prompt into Claude Code.',
       tabs: "Sections", "tab.moves": "Moves", "tab.modes": "Modes", "tab.kit": "Components", "tab.cuts": "Transitions", "tab.sound": "Sound", "tab.themes": "Themes", "tab.fonts": "Fonts", "tab.commands": "Commands",
       searchPh: "whip pan, shake, glitch, #043…", modeAria: "ae-motion mode", allModes: "All modes", energy: "Energy", anyEnergy: "Any energy", e1: "Calm", e2: "Medium", e3: "Hard",
@@ -130,7 +164,7 @@
 
   const fill = (s, args) => s.replace(/\{(\d)\}/g, (_, i) => args[i]);
   window.LANG = lang;
-  window.t = (key, ...args) => fill(UI[lang][key] ?? UI.ru[key] ?? key, args);
+  window.t = (key, ...args) => { const v = UI[lang][key] ?? UI.ru[key] ?? key; return typeof v === "string" ? fill(v, args) : v; };
   // Plugin text: Russian when a translation exists; "<Name> mode — <purpose>" keeps the name and translates the purpose.
   window.tr = s => {
     if (lang !== "ru" || !s) return s;

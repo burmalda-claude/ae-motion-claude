@@ -61,7 +61,7 @@ def plan(B, start, end, style="phonk", drop=None, seed=7):
         if f - last >= min_gap and total - f >= 6:
             cuts.append(f)
             last = f
-    shots, kind, run, accents = [], None, 0, 0
+    shots, kind, run = [], None, 0
     weights = STYLE[style]
     for i, f in enumerate(cuts):
         nxt = cuts[i + 1] if i + 1 < len(cuts) else total

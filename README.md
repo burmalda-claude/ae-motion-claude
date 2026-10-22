@@ -4,6 +4,8 @@
 
 A [Claude Code](https://claude.com/claude-code) plugin that teaches Claude to make videos that look like After Effects work — without After Effects. Videos are built in code with [Remotion](https://www.remotion.dev/) (React); the plugin turns a one-line prompt into a finished, AE-quality video: Claude directs it (script, pacing, theme) and builds it from a ready component kit, themes, fonts and editing rules.
 
+> **Not After Effects automation.** ae-motion does not open, script or render After Effects (no ExtendScript, UXP or `aerender`). It makes videos that *look* like After Effects work, in code: Remotion (React) for the picture, Python helpers for voice, sound and beat. You do not need After Effects installed.
+
 ## What's inside
 
 One skill, `motion-design`, which Claude loads on its own when you ask for a video, intro, titles, promo, reels and so on. You write one line — Claude acts as director, motion designer, editor and sound designer.
@@ -229,14 +231,48 @@ All Google Fonts, loaded automatically. ✅ = Cyrillic supported.
 
 ## Installation
 
+**Requirements:** Claude Code, Node.js 18+, Python 3.10+. ffmpeg comes with the `imageio-ffmpeg` package. Tested with Claude Code 2.1.308, Remotion 4.0.537, Python 3.10 and 3.13 on Linux; the tools are plain Python and Node, so macOS and Windows are expected to work but are not covered by CI.
+
 ```bash
+# install
 claude plugin marketplace add burmalda-claude/ae-motion-claude
 claude plugin install ae-motion@ae-motion-local
+pip install numpy scipy librosa edge-tts imageio-ffmpeg   # = tools/requirements.txt; /ae-motion:doctor prints the full path
+
+# update (restart Claude Code afterwards)
+claude plugin marketplace update ae-motion-local
+claude plugin update ae-motion@ae-motion-local
+
+# remove
+claude plugin uninstall ae-motion@ae-motion-local
+claude plugin marketplace remove ae-motion-local
 ```
 
-Or from a local folder: `claude plugin marketplace add ./ae-motion-claude`.
+From a local clone: `claude plugin marketplace add ./ae-motion-claude`. Optional features: `tools/requirements-extra.txt` (`faster-whisper` for modes on your own media, `opencv` for `/ae-motion:trans-learn`, `yt-dlp` for music downloads). Voice-over needs internet (Edge TTS).
 
-You need Node.js and Python 3 (`pip install edge-tts numpy scipy librosa imageio-ffmpeg`). Claude sets up the Remotion project and installs packages itself. Voice-over needs internet (Edge TTS); without it a robotic offline Windows voice is used.
+**First run:** `/ae-motion:doctor` (is everything installed?), then `/ae-motion:help` or just describe the video.
+
+## What runs automatically, and how to turn it off
+
+| Piece | Kind | What it does | Turn off |
+|---|---|---|---|
+| Download confirmation | hook (PreToolUse, Bash) | `yt-dlp`, and `curl`/`wget` that save a file, show a permission prompt with the reason. Everything else passes silently; if Python is missing the hook skips itself | `AE_MOTION_ALLOW_DOWNLOADS=1`, or disable the plugin |
+| `/ae-motion:doctor` | command + script `tools/doctor.py` | read-only check: packages, Node, Remotion add-ons, stale `src/kit/`, `tsconfig`, Remotion < 4.0.410 (critical advisories) | it runs only when you call it |
+| `frame-reviewer` | agent | reviews key-frame stills against the brief and `timeline.json` in its own context; reports, never edits | Claude uses it on long videos; say "no reviewer" to skip |
+| Brief, director, lexicon, modes | instructions for Claude | how Claude plans and builds; not enforced by code | say "без вопросов" / "no questions" to skip the brief |
+
+Everything else (`build.py`, `sfxgen.py`, `beats.py`, `transplan.py`, `lexicon.py`) is a script Claude runs through its normal tools, under your permission settings. There is no MCP server: nothing here needs one.
+
+## Troubleshooting
+
+- **Something is missing / an import fails** → `/ae-motion:doctor` prints the fix for each problem.
+- **"kit differs from the plugin"** → your `src/kit/` is older or edited; copy the plugin's `kit/` again if you did not edit it on purpose.
+- **Remotion < 4.0.410 reported** → `npx remotion upgrade` (critical advisories, see [SECURITY.md](SECURITY.md)).
+- **A `trans-wipe`-style command is gone** → it is `/ae-motion:transition wipe` since 0.10.0 ([migration](CHANGELOG.md)).
+- **Permission prompt on a download you expect** → that is the hook; allow it, or set `AE_MOTION_ALLOW_DOWNLOADS=1`.
+- **Robotic voice** → Edge TTS needs internet; offline the system voice is used.
+
+Security and privacy: [SECURITY.md](SECURITY.md) · Contributing and checks: [CONTRIBUTING.md](CONTRIBUTING.md) · Changes: [CHANGELOG.md](CHANGELOG.md)
 
 ## Example
 
@@ -249,9 +285,13 @@ Claude picks the theme, writes the voice script, generates the voice-over with w
 ```
 ae-motion-claude/
 ├── .claude-plugin/marketplace.json
+├── ci/, scripts/, .github/  ← CI only (kit typecheck, docs check)
 ├── docs/               ← lexicon gallery (GitHub Pages): index.html, lexicon.json, vendor/motion-prompt
 └── plugins/ae-motion/
     ├── .claude-plugin/plugin.json
+    ├── commands/           ← /ae-motion:<name>
+    ├── agents/             ← frame-reviewer
+    ├── hooks/              ← download confirmation
     └── skills/motion-design/
         ├── SKILL.md
         ├── kit/            ← easing, text, fx, kinetic, camera, transitions, ui, audio (+ index.ts)

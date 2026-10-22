@@ -5,6 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Каталог ae-motion</title>
 <meta name="claude:viewport-fit-sides" content="cover">
+<link rel="canonical" href="https://burmalda-claude.github.io/ae-motion-claude/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://burmalda-claude.github.io/ae-motion-claude/">
+<meta property="og:title" content="ae-motion — After Effects-style video from one prompt in Claude Code">
+<meta property="og:description" content="144 motion names with live samples, 18 modes, 155 Remotion components, 30 transitions with sound, a procedural SFX engine, themes and fonts.">
+<meta name="twitter:card" content="summary">
 <meta name="description" content="Всё, что умеет плагин ae-motion для Claude Code: 144 названия движений, 18 режимов, 155 компонентов, 30 переходов, звуковой движок, темы и шрифты.">
 <script src="i18n.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -18,7 +24,7 @@
   --ink: #12151b;
   --mute: #5a6271;
   --line: #cdd2db;
-  --key: #b86a00;       /* AE keyframe amber */
+  --key: #945300;       /* AE keyframe amber, darkened to 5:1 on the page (WCAG AA) */
   --key-soft: #f5e3c8;
   --kit: #0f6f7a;       /* "built in the kit" teal */
   --kit-soft: #d5ecee;
@@ -61,7 +67,7 @@ h1 .tc { font: 600 0.42em var(--f-mono); color: var(--key); vertical-align: 0.5e
 .search kbd { font: 12px var(--f-mono); color: var(--mute); border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; }
 .chip { border: 1px solid var(--line); background: var(--bg); border-radius: 999px; padding: 4px 11px; cursor: pointer; font-size: 13px; white-space: nowrap; }
 .chip[aria-pressed="true"] { background: var(--ink); color: var(--panel); border-color: var(--ink); }
-.chip .n { font: 11px var(--f-mono); opacity: 0.6; margin-left: 4px; }
+.chip .n { font: 11px var(--f-mono); margin-left: 4px; }
 select.chip { padding-right: 8px; }
 @media (max-width: 640px) { #packs { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; } .bar .wrap { padding-block: 8px; } }
 .count { font: 12px var(--f-mono); color: var(--mute); margin-left: auto; }
@@ -121,10 +127,20 @@ footer a { color: inherit; }
 .tabs a { text-decoration: none; color: var(--mute); padding: 8px 12px; border-radius: 8px 8px 0 0; border-bottom: 2px solid transparent; white-space: nowrap; font-weight: 500; }
 .tabs a:hover { color: var(--ink); }
 .tabs a[aria-current="page"] { color: var(--ink); border-bottom-color: var(--key); }
-.tabs .n { font: 11px var(--f-mono); opacity: 0.6; }
+.tabs .n { font: 11px var(--f-mono); color: var(--mute); }
 .view { padding-block: 18px 140px; display: grid; gap: 18px; }
 .view h2.sec { margin: 8px 0 0; font: 700 20px/1.2 var(--f-display); }
 .view .intro { margin: 0; max-width: 72ch; color: var(--mute); }
+.cmd { display: grid; grid-template-columns: 1fr auto; gap: 6px; align-items: start; }
+.cmd .prompt { margin: 0; }
+details.faq summary { cursor: pointer; font-weight: 600; list-style-position: inside; }
+details.faq[open] summary { margin-bottom: 6px; }
+details.faq { display: block; }
+.md h3 { margin: 10px 0 4px; font: 600 12px var(--f-mono); text-transform: uppercase; letter-spacing: 0.05em; color: var(--mute); }
+.md ul { margin: 0 0 6px; padding-left: 18px; display: grid; gap: 3px; }
+.md p { margin: 0 0 6px; }
+.md a, .view .chips a.chip { color: inherit; }
+.view a.chip { text-decoration: none; }
 .cols { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: 14px; }
 .panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; display: flex; flex-direction: column; min-width: 0; }
 .panel .body { gap: 10px; }
@@ -168,6 +184,7 @@ table.t th { border-top: 0; font: 11px var(--f-mono); text-transform: uppercase;
   <div class="headrow"><h1>ae-motion<span class="tc" id="ver">v0.10</span></h1><select id="lang" class="chip" data-i18n-aria="langAria" aria-label="Язык"><option value="ru">Русский</option><option value="en">English</option></select></div>
   <p class="lead" data-i18n="lead">Плагин для Claude Code, который делает видео уровня After Effects из одной строки. Здесь всё, что у него внутри: <b>названия движений</b> с живыми примерами, <b>режимы</b>, <b>компоненты</b>, <b>переходы</b>, <b>звуки</b>, темы и шрифты. Отметьте нужное, допишите задачу и вставьте готовый промпт в Claude Code.</p>
   <nav class="tabs" id="tabs" aria-label="Разделы" data-i18n-aria="tabs">
+    <a href="#start" data-tab="start"><span data-i18n="tab.start">Старт</span></a>
     <a href="#moves" data-tab="moves"><span data-i18n="tab.moves">Движения</span> <span class="n">144</span></a>
     <a href="#modes" data-tab="modes"><span data-i18n="tab.modes">Режимы</span> <span class="n">18</span></a>
     <a href="#kit" data-tab="kit"><span data-i18n="tab.kit">Компоненты</span> <span class="n" data-count="kit"></span></a>
@@ -180,7 +197,7 @@ table.t th { border-top: 0; font: 11px var(--f-mono); text-transform: uppercase;
 </header>
 <div data-view="moves">
 
-<div class="bar">
+<div class="bar" role="search">
   <div class="wrap">
     <div class="row">
       <label class="search" for="q"><span aria-hidden="true">⌕</span><input id="q" type="search" placeholder="вип-пан, тряска, glitch, #043…" data-i18n-ph="searchPh" autocomplete="off"><kbd>/</kbd></label>
@@ -199,6 +216,7 @@ table.t th { border-top: 0; font: 11px var(--f-mono); text-transform: uppercase;
   <p class="empty" id="empty" hidden data-i18n="empty">Ничего не нашлось. Попробуйте английское название или тег: whip, zoom, mask, glitch.</p>
 </main>
 </div>
+<main class="wrap view" data-view="start" hidden></main>
 <main class="wrap view" data-view="modes" hidden></main>
 <main class="wrap view" data-view="kit" hidden></main>
 <main class="wrap view" data-view="cuts" hidden></main>

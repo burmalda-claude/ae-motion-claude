@@ -2,10 +2,10 @@
 (() => {
   const $ = (s, r = document) => r.querySelector(s);
   const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-  const TABS = ["moves", "modes", "kit", "cuts", "sound", "themes", "fonts", "commands"];
+  const TABS = ["start", "moves", "modes", "kit", "cuts", "sound", "themes", "fonts", "commands"];
   const fileName = f => { const k = "files." + f, v = t(k); return v === k ? f : v; };
   const L = window.LANG;
-  const SECTION_COLOR = { intro: "#5b6b8c", build: "#b86a00", drop: "#c2362b", break: "#3f7f6a", ui: "#0f6f7a", stop: "#555c66" };
+  const SECTION_COLOR = { intro: "#5b6b8c", build: "#945300", drop: "#c2362b", break: "#3f7f6a", ui: "#0f6f7a", stop: "#555c66" };
   const GROUPS = ["start", "mode", "transition", "sound"];
   let D, rendered = {};
 
@@ -54,8 +54,55 @@
     if (row) { row.scrollIntoView({ block: "center" }); row.classList.add("flash"); setTimeout(() => row.classList.remove("flash"), 1600); }
   });
 
+  // Minimal markdown for CHANGELOG sections we write ourselves: ### headings, lists, tables, `code`, **bold**, [links](url).
+  const inline = s => esc(s).replace(/`([^`]+)`/g, "<code class=\"mono\">$1</code>").replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>")
+    .replace(/\[([^\]]+)\]\((https?:[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+  function md(text) {
+    const out = []; let list = false, table = null;
+    const flush = () => { if (list) { out.push("</ul>"); list = false; } if (table) { out.push(`<div class="tablewrap"><table class="t">${table.join("")}</table></div>`); table = null; } };
+    for (const raw of text.split("\n")) {
+      const line = raw.trim();
+      if (/^\|.*\|$/.test(line)) {
+        if (/^\|[\s|:-]+\|$/.test(line)) continue;
+        if (list) { out.push("</ul>"); list = false; }
+        const cells = line.slice(1, -1).split("|").map(c => inline(c.trim()));
+        table = table || []; table.push(`<tr>${cells.map(c => (table.length ? `<td>${c}</td>` : `<th>${c}</th>`)).join("")}</tr>`);
+      } else if (line.startsWith("- ")) { if (table) flush(); if (!list) { out.push("<ul>"); list = true; } out.push(`<li>${inline(line.slice(2))}</li>`); }
+      else if (line.startsWith("### ")) { flush(); out.push(`<h3>${inline(line.slice(4))}</h3>`); }
+      else if (line) { flush(); out.push(`<p>${inline(line)}</p>`); }
+      else flush();
+    }
+    flush();
+    return out.join("");
+  }
+  const code = (cmd) => `<div class="cmd"><pre class="prompt">${esc(cmd)}</pre><button class="btn" type="button" data-copy-text="${esc(cmd)}">${t("copy")}</button></div>`;
+  const REPO = "https://github.com/burmalda-claude/ae-motion-claude";
+
   // ---------------------------------------------------------------- views
   const V = {
+    start(el) {
+      const row = r => `<tr>${r.map((c, i) => `<td>${i === 0 ? `<b>${esc(c)}</b>` : i === 3 ? `<code class="mono">${esc(c)}</code>` : esc(c)}</td>`).join("")}</tr>`;
+      el.innerHTML = `<h2 class="sec">${t("startH2")}</h2><p class="intro">${esc(t("startIntro"))}</p>
+        <div class="cols">
+          <section class="panel"><div class="body"><h3 class="name">${t("reqH")}</h3><p class="meaning">${esc(t("req"))}</p>
+            <h3 class="name">${t("firstH")}</h3><p class="meaning">${t("first")}</p></div></section>
+          <section class="panel"><div class="body">
+            <h3 class="name">${t("installH")}</h3>${code("claude plugin marketplace add burmalda-claude/ae-motion-claude\nclaude plugin install ae-motion@ae-motion-local")}${code("pip install numpy scipy librosa edge-tts imageio-ffmpeg")}
+            <h3 class="name">${t("updateH")}</h3>${code("claude plugin marketplace update ae-motion-local\nclaude plugin update ae-motion@ae-motion-local")}
+            <h3 class="name">${t("removeH")}</h3>${code("claude plugin uninstall ae-motion@ae-motion-local\nclaude plugin marketplace remove ae-motion-local")}
+          </div></section>
+        </div>
+        <h2 class="sec">${t("autoH")}</h2>
+        <div class="tablewrap"><table class="t"><thead><tr><th>${t("autoName")}</th><th>${t("autoKind")}</th><th>${t("autoWhat")}</th><th>${t("autoOff")}</th></tr></thead>
+          <tbody>${[t("auto1"), t("auto2"), t("auto3"), t("auto4")].map(row).join("")}</tbody></table></div>
+        <h2 class="sec">${t("faqH")}</h2>
+        <div class="rows">${t("faq").map(([q, a]) => `<details class="rowi faq"><summary>${esc(q)}</summary><p class="doc">${esc(a)}</p></details>`).join("")}</div>
+        <h2 class="sec">${t("changesH")}</h2>
+        <div class="rows">${D.changelog.map((c, i) => `<details class="rowi faq" ${i === 0 ? "open" : ""}><summary><code class="mono">${esc(c.version)}</code> · ${esc(c.date === "unreleased" ? t("unreleased") : c.date)}</summary><div class="doc md">${md(c.body)}</div></details>`).join("")}</div>
+        <h2 class="sec">${t("linksH")}</h2>
+        <div class="chips">${[["GitHub", REPO], ["README", REPO + "#readme"], ["CHANGELOG.md", REPO + "/blob/main/CHANGELOG.md"], ["SECURITY.md", REPO + "/blob/main/SECURITY.md"], ["CONTRIBUTING.md", REPO + "/blob/main/CONTRIBUTING.md"], ["Issues", REPO + "/issues"]].map(([l, u]) => `<a class="chip" href="${u}" target="_blank" rel="noopener">${l}</a>`).join("")}</div>`;
+    },
+
     modes(el) {
       el.innerHTML = `<h2 class="sec">${t("modesH2")}</h2><p class="intro">${t("modesIntro")}</p><div class="cols"></div>`;
       $(".cols", el).innerHTML = D.modes.map(m => {
@@ -66,7 +113,7 @@
           <div class="band" style="background:${esc(p.bg)};color:${esc(p.text)}">
             <span class="sw">${Object.values(p).map(c => `<i style="background:${esc(c)}" title="${esc(c)}"></i>`).join("")}</span>
             <span class="big" style="${ff(disp)};font-weight:900">${esc(m.name)}</span>
-            <span style="color:${esc(p.accent)};font:600 12px var(--f-mono)">/ae-motion:${esc(m.id)}</span>
+            <span style="color:${esc(p.text)};font:600 12px var(--f-mono);text-decoration:underline 2px ${esc(p.accent)};text-underline-offset:4px">/ae-motion:${esc(m.id)}</span>
           </div>
           <div class="body">
             <p class="meaning">${esc(tr(m.purpose))}</p>
@@ -146,10 +193,10 @@
         return `<article class="panel">
           <div class="band" style="background:${esc(bg?.hex)};color:${esc(fg?.hex)}">
             <span class="big" style="${ff(head)};font-weight:900">${esc(th.name.split(" (")[0])}</span>
-            <span style="${ff(body)};font-size:15px">${t("sample1")}<span style="color:${esc(acc?.hex)}">${t("sample2")}</span></span>
+            <span style="${ff(body)};font-size:19px;font-weight:700">${t("sample1")}<span style="color:${esc(acc?.hex)}">${t("sample2")}</span></span>
           </div>
           <div class="body">
-            <div class="chips">${th.palette.map(s => `<button class="k" type="button" data-copy-text="${esc(s.hex)}" style="background:${esc(s.hex)};color:${luma(s.hex) > 0.55 ? "#111" : "#fff"}" title="${esc(s.label)}">${esc(s.label)} ${esc(s.hex)}</button>`).join("")}</div>
+            <div class="chips">${th.palette.map(s => `<button class="k" type="button" data-copy-text="${esc(s.hex)}" style="background:${esc(s.hex)};color:${inkOn(s.hex)}" title="${esc(s.label)}">${esc(s.label)} ${esc(s.hex)}</button>`).join("")}</div>
             <dl class="kv"><dt>${t("fontsL")}</dt><dd>${esc(th.fonts)}</dd><dt>${t("motion")}</dt><dd>${esc(th.motion)}</dd></dl>
             <div class="actions"><button class="btn" type="button" data-copy-text="${esc(t("themeCopy", th.name))}">${t("copyForPrompt")}</button></div>
           </div></article>`;
@@ -177,7 +224,9 @@
           <div class="actions" style="padding:0"><button class="btn" type="button" data-copy-text="/ae-motion:${esc(c.name)} ">${t("copy")}</button></div></div></div>`).join("")}</div>`).join("");
     },
   };
-  const luma = hex => { const n = parseInt(hex.slice(1), 16); return (0.299 * (n >> 16) + 0.587 * (n >> 8 & 255) + 0.114 * (n & 255)) / 255; };
+  // WCAG relative luminance; text colour = black or white, whichever contrasts more with the swatch.
+  const lum = hex => { const n = parseInt(hex.slice(1), 16); return [n >> 16, n >> 8 & 255, n & 255].map(c => (c /= 255) <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4).reduce((s, c, i) => s + c * [0.2126, 0.7152, 0.0722][i], 0); };
+  const inkOn = hex => (lum(hex) + 0.05) / 0.05 >= 1.05 / (lum(hex) + 0.05) ? "#000" : "#fff";  // ratios are for pure black/white, so ink must be exactly those
 
   // ---------------------------------------------------------------- routing
   function go(tab) {
