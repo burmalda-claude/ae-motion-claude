@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Словарь движений ae-motion</title>
+<title>Каталог ae-motion</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<meta name="description" content="144 названия движений с живыми примерами, привязкой к компонентам ae-motion и готовыми запросами для Claude.">
+<meta name="description" content="Всё, что умеет плагин ae-motion для Claude Code: 144 названия движений, 18 режимов, 155 компонентов, 30 переходов, звуковой движок, темы и шрифты.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
@@ -39,6 +39,7 @@
   color-scheme: dark; }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 var(--f-body); }
 body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--panel); }
 .wrap { max-width: 1320px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
@@ -114,14 +115,68 @@ dialog .close { position: absolute; right: 10px; top: 8px; background: rgba(0,0,
 .prompt { font: 13px/1.5 var(--f-mono); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; white-space: pre-wrap; margin: 0; overflow-x: auto; }
 footer.wrap { padding-block: 0 24px; color: var(--mute); font-size: 13px; }
 footer a { color: inherit; }
+.tabs { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; margin-top: 6px; }
+.tabs a { text-decoration: none; color: var(--mute); padding: 8px 12px; border-radius: 8px 8px 0 0; border-bottom: 2px solid transparent; white-space: nowrap; font-weight: 500; }
+.tabs a:hover { color: var(--ink); }
+.tabs a[aria-current="page"] { color: var(--ink); border-bottom-color: var(--key); }
+.tabs .n { font: 11px var(--f-mono); opacity: 0.6; }
+.view { padding-block: 18px 140px; display: grid; gap: 18px; }
+.view h2.sec { margin: 8px 0 0; font: 700 20px/1.2 var(--f-display); }
+.view .intro { margin: 0; max-width: 72ch; color: var(--mute); }
+.cols { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: 14px; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; display: flex; flex-direction: column; min-width: 0; }
+.panel .body { gap: 10px; }
+.band { padding: 18px 16px; min-height: 120px; display: grid; align-content: end; gap: 6px; position: relative; }
+.band .big { font-size: clamp(26px, 4vw, 34px); line-height: 1; letter-spacing: -0.02em; overflow-wrap: anywhere; }
+.band .sw { display: flex; gap: 4px; position: absolute; right: 12px; top: 12px; }
+.band .sw i { width: 16px; height: 16px; border-radius: 50%; border: 1px solid rgba(127,127,127,.4); }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 3px 12px; font-size: 13px; margin: 0; }
+.kv dt { color: var(--mute); font: 11px/1.9 var(--f-mono); text-transform: uppercase; letter-spacing: 0.05em; }
+.kv dd { margin: 0; min-width: 0; }
+.chips { display: flex; flex-wrap: wrap; gap: 4px; }
+button.k, a.k { border: 0; cursor: pointer; text-decoration: none; }
+button.k:hover, a.k:hover { outline: 1px solid var(--kit); }
+.lx { font: 12px var(--f-mono); background: var(--key-soft); color: var(--ink); padding: 1px 7px; border-radius: 5px; border: 0; cursor: pointer; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 4; background: var(--bg); padding-block: 8px; }
+.rows { display: grid; gap: 0; border: 1px solid var(--line); border-radius: var(--r); background: var(--panel); overflow: hidden; }
+.rowi { display: grid; grid-template-columns: minmax(150px, 220px) 1fr; gap: 4px 16px; padding: 10px 14px; border-top: 1px solid var(--line); align-items: start; }
+.rowi:first-child { border-top: 0; }
+.rowi:target, .rowi.flash { background: var(--key-soft); }
+.rowi code, .mono { font: 13px var(--f-mono); }
+.rowi .meta { display: grid; gap: 6px; min-width: 0; }
+.rowi .doc { margin: 0; font-size: 14px; }
+.tag { font: 11px var(--f-mono); color: var(--mute); border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; }
+.play { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); background: var(--bg); border-radius: 999px; padding: 4px 11px 4px 8px; cursor: pointer; font: 12px var(--f-mono); }
+.play::before { content: ""; width: 0; height: 0; border-left: 8px solid var(--key); border-top: 5px solid transparent; border-bottom: 5px solid transparent; }
+.play.on { border-color: var(--key); background: var(--key-soft); }
+.play.on::before { border: 0; width: 8px; height: 10px; background: linear-gradient(90deg, var(--key) 35%, transparent 35% 65%, var(--key) 65%); }
+.sections { display: flex; gap: 2px; height: 18px; }
+.sections span { flex: 1; border-radius: 2px; font: 9px/18px var(--f-mono); text-align: center; color: #fff; overflow: hidden; }
+.spec-line { font-size: clamp(22px, 3.4vw, 30px); line-height: 1.1; margin: 0; overflow-wrap: anywhere; }
+.tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--r); background: var(--panel); }
+table.t { border-collapse: collapse; width: 100%; min-width: 640px; font-size: 14px; }
+table.t th, table.t td { text-align: left; padding: 10px 14px; border-top: 1px solid var(--line); vertical-align: top; }
+table.t th { border-top: 0; font: 11px var(--f-mono); text-transform: uppercase; letter-spacing: 0.05em; color: var(--mute); }
+@media (max-width: 560px) { .rowi { grid-template-columns: 1fr; } }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
 </style>
 </head>
 <body>
 <header class="top wrap">
-  <h1>Словарь движений<span class="tc">00:00:144</span></h1>
-  <p class="lead">Не знаете, как называется движение — найдите его здесь. У каждого из <b>144 названий</b> есть живой пример, смысл в одну строку, готовый запрос и <b>компоненты ae-motion</b>, которыми Claude его соберёт. Отметьте нужные приёмы, допишите задачу и вставьте готовый промпт в Claude Code.</p>
+  <h1>ae-motion<span class="tc" id="ver">v0.10</span></h1>
+  <p class="lead">Плагин для Claude Code, который делает видео уровня After Effects из одной строки. Здесь всё, что у него внутри: <b>названия движений</b> с живыми примерами, <b>режимы</b>, <b>компоненты</b>, <b>переходы</b>, <b>звуки</b>, темы и шрифты. Отметьте нужное, допишите задачу и вставьте готовый промпт в Claude Code.</p>
+  <nav class="tabs" id="tabs" aria-label="Разделы">
+    <a href="#moves" data-tab="moves">Движения <span class="n">144</span></a>
+    <a href="#modes" data-tab="modes">Режимы <span class="n">18</span></a>
+    <a href="#kit" data-tab="kit">Компоненты <span class="n" data-count="kit"></span></a>
+    <a href="#cuts" data-tab="cuts">Переходы <span class="n" data-count="cuts"></span></a>
+    <a href="#sound" data-tab="sound">Звук <span class="n" data-count="sound"></span></a>
+    <a href="#themes" data-tab="themes">Темы <span class="n">14</span></a>
+    <a href="#fonts" data-tab="fonts">Шрифты <span class="n" data-count="fonts"></span></a>
+    <a href="#commands" data-tab="commands">Команды <span class="n" data-count="commands"></span></a>
+  </nav>
 </header>
+<div data-view="moves">
 
 <div class="bar">
   <div class="wrap">
@@ -140,9 +195,17 @@ footer a { color: inherit; }
   <div class="grid" id="grid"></div>
   <p class="empty" id="empty" hidden>Ничего не нашлось. Попробуйте английское название или тег: whip, zoom, mask, glitch.</p>
 </main>
+</div>
+<main class="wrap view" data-view="modes" hidden></main>
+<main class="wrap view" data-view="kit" hidden></main>
+<main class="wrap view" data-view="cuts" hidden></main>
+<main class="wrap view" data-view="sound" hidden></main>
+<main class="wrap view" data-view="themes" hidden></main>
+<main class="wrap view" data-view="fonts" hidden></main>
+<main class="wrap view" data-view="commands" hidden></main>
 
 <footer class="wrap">
-  Названия, описания и анимации: <a href="https://github.com/showheyohtaki/motion-prompt" target="_blank" rel="noopener">motion-prompt</a> © Shohei Ohtaki, MIT. Русский слой, привязка к kit и сайт: <a href="https://github.com/burmalda-claude/ae-motion-claude" target="_blank" rel="noopener">ae-motion</a>.
+  Названия, описания и анимации: <a href="https://github.com/showheyohtaki/motion-prompt" target="_blank" rel="noopener">motion-prompt</a> © Shohei Ohtaki, MIT. Русский слой, привязка к kit, каталог и сайт: <a href="https://github.com/burmalda-claude/ae-motion-claude" target="_blank" rel="noopener">ae-motion</a>.
   <span class="count" id="count"></span>
 </footer>
 
@@ -164,6 +227,7 @@ footer a { color: inherit; }
 <script src="vendor/motion-prompt/lp.js"></script>
 <script src="vendor/motion-prompt/photo.js"></script>
 <script src="vendor/motion-prompt/motion2.js"></script>
+<script src="catalog.js" defer></script>
 <script>
 (() => {
   const $ = s => document.querySelector(s);
@@ -304,7 +368,8 @@ footer a { color: inherit; }
     if (!dlg.open) dlg.showModal();
     try { history.replaceState(null, "", "#" + id); } catch {}
   }
-  dlg.addEventListener("close", () => { dlg.querySelectorAll("canvas").forEach(c => { io.unobserve(c); visible.delete(c); }); try { history.replaceState(null, "", location.pathname); } catch {} });
+  dlg.addEventListener("close", () => { dlg.querySelectorAll("canvas").forEach(c => { io.unobserve(c); visible.delete(c); }); try { history.replaceState(null, "", location.pathname + (window.aeTab && window.aeTab !== "moves" ? "#" + window.aeTab : "")); } catch {} });
+  window.aeLex = { open: id => open(id), byId: () => byId, pick: id => { if (!picked.has(id)) toggle(id); } };
   dlg.addEventListener("click", e => { if (e.target === dlg) dlg.close(); });
 
   // --- controls
@@ -336,6 +401,7 @@ footer a { color: inherit; }
     picked = new Set([...picked].filter(id => byId[id]));
     chips(); render(); renderBin();
     const h = location.hash.slice(1); if (byId[h]) open(h);
+    document.dispatchEvent(new Event("ae-lex-ready"));
   }).catch(err => { $("#empty").hidden = false; $("#empty").textContent = `Не удалось загрузить lexicon.json (${err.message}). Откройте сайт через веб-сервер: python -m http.server в папке docs.`; });
 })();
 </script>
